@@ -69,11 +69,7 @@
           </div>
         </div>
         <div class="acceso-staff" id="acceso-staff" role="group" aria-label="Ingreso del personal de informática" hidden>
-          <button type="button" class="btn-staff adm" data-staff="admin">
-            <svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2l8 3v6c0 5-3.4 9.4-8 11-4.6-1.6-8-6-8-11V5z" fill="none" stroke="currentColor" stroke-width="2"/><path d="M8.5 12l2.5 2.5 4.5-5" fill="none" stroke="currentColor" stroke-width="2"/></svg>
-            <span>Administrador TI</span>
-          </button>
-          <button type="button" class="btn-staff sop" data-staff="soporte">
+          <button type="button" class="btn-staff adm" data-staff="soporte">
             <svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 14v-2a8 8 0 0 1 16 0v2" fill="none" stroke="currentColor" stroke-width="2"/><rect x="3" y="13" width="4" height="6" rx="1" fill="none" stroke="currentColor" stroke-width="2"/><rect x="17" y="13" width="4" height="6" rx="1" fill="none" stroke="currentColor" stroke-width="2"/><path d="M19 19c0 1.5-1.5 2.5-4 2.5h-2" fill="none" stroke="currentColor" stroke-width="2"/></svg>
             <span>Usuario TI</span>
           </button>
@@ -99,7 +95,7 @@
           <dl class="contacto" id="contacto-soporte"></dl>
           <a class="manual" href="docs/Manual-usuario-Mesa-de-Ayuda-TI-CONAF.pdf" download>
             <svg width="22" height="22" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 2h8l5 5v15H6z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><path d="M14 2v5h5M12.5 11v6M9.5 14.5l3 3 3-3" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
-            <span><b>Descargar manual de usuario</b><small>PDF · 2,4 MB · Funcionarios, Usuario TI y Administrador TI</small></span>
+            <span><b>Descargar manual de usuario</b><small>PDF · 2,4 MB · versión anterior, pendiente de actualizar</small></span>
           </a>
         </div>
 
@@ -129,6 +125,7 @@
                 <div class="campo"><label for="rg-nombre">Nombre y apellido</label><input type="text" id="rg-nombre" autocomplete="name" required></div>
                 <div class="campo"><label for="rg-correo">Correo institucional</label><input type="email" id="rg-correo" autocomplete="email" placeholder="nombre.apellido@conaf.cl" required></div>
                 <div class="campo"><label for="rg-unidad">Unidad / Gerencia</label><input type="text" id="rg-unidad" list="lista-unidades" autocomplete="off" required></div>
+                <div class="campo"><label for="rg-cargo">Cargo</label><select id="rg-cargo" required></select><span class="ayuda">Según el organigrama institucional. Define la prioridad de tus solicitudes.</span></div>
                 <div class="campo"><label for="rg-anexo">Anexo (opcional)</label><input type="text" id="rg-anexo" inputmode="numeric" autocomplete="off"></div>
                 <div class="campo"><label for="rg-clave">Contraseña (mínimo 8 caracteres)</label>
                   <div class="clave-wrap"><input type="password" id="rg-clave" autocomplete="new-password" required><button type="button" class="ver-clave" data-ver="rg-clave" aria-label="Mostrar contraseña">Ver</button></div></div>
@@ -143,11 +140,10 @@
             <summary>Cuentas de demostración del prototipo</summary>
             <table>
               <tr><th>Funcionario/a</th><td><code>funcionario.demo@conaf.cl</code></td><td><code>Conaf2026!</code></td></tr>
-              <tr><th>Administrador</th><td><code>admin.demo@conaf.cl</code></td><td><code>Admin2026!</code></td></tr>
-              <tr><th>Soporte</th><td><code>soporte.demo@conaf.cl</code></td><td><code>Soporte2026!</code></td></tr>
-              <tr><th>Soporte</th><td><code>tecnico.demo@conaf.cl</code></td><td><code>Soporte2026!</code></td></tr>
+              <tr><th>Usuario TI 1</th><td><code>soporte.demo@conaf.cl</code></td><td><code>Soporte2026!</code></td></tr>
+              <tr><th>Usuario TI 2</th><td><code>tecnico.demo@conaf.cl</code></td><td><code>Soporte2026!</code></td></tr>
             </table>
-            <p>El administrador y soporte ingresan con los botones «Administrador TI» y «Usuario TI» de la esquina superior derecha. Desactiva estas cuentas en <b>Usuarios</b> antes de usar el sistema en producción.</p>
+            <p>Los Usuarios TI ingresan con el botón «Usuario TI» de la esquina superior derecha. Desactiva estas cuentas en <b>Usuarios</b> antes de usar el sistema en producción.</p>
           </details>
         </div>
       </div>
