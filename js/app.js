@@ -71,27 +71,20 @@
   });
 
   /* ================= PORTADA ================= */
-  let rolAcceso = "funcionario";
-  function elegirRol(rol) {
-    rolAcceso = rol;
-    $$(".roles [role=tab]").forEach(b => b.setAttribute("aria-selected", String(b.dataset.rol === rol)));
-    $("#panel-acceso").setAttribute("aria-labelledby", rol === "admin" ? "tab-adm" : "tab-fun");
-    $(".acceso-card").classList.toggle("modo-admin", rol === "admin");
-    $("#rol-desc").textContent = rol === "admin"
-      ? "Acceso para el equipo del Departamento de Informática que atiende y administra la mesa de ayuda."
-      : "Ingresa con tu correo institucional para registrar y revisar tus solicitudes.";
-    $("#in-btn").className = rol === "admin" ? "btn azul ancho" : "btn primario ancho";
-    $("#in-btn").textContent = rol === "admin" ? "Ingresar a la administración" : "Ingresar";
-    $("#pie-fun").hidden = rol === "admin"; $("#pie-adm").hidden = rol !== "admin";
-    $("#form-registro").hidden = true; $("#form-ingreso").hidden = false; $("#in-error").textContent = "";
+  const TIT_INGRESO = "Para solicitar un ticket de atención, ingrese los siguientes datos";
+  function verFormulario(registro) {
+    $("#form-ingreso").hidden = registro; $("#form-registro").hidden = !registro;
+    $("#acceso-tit").textContent = registro ? "Crea tu cuenta" : TIT_INGRESO;
+    $("#in-error").textContent = ""; $("#rg-error").textContent = "";
   }
-  $$(".roles [role=tab]").forEach(b => {
-    b.addEventListener("click", () => elegirRol(b.dataset.rol));
-    b.addEventListener("keydown", e => { if (e.key === "ArrowRight" || e.key === "ArrowLeft") { const otro = b.dataset.rol === "admin" ? "funcionario" : "admin"; elegirRol(otro); $(`.roles [data-rol="${otro}"]`).focus(); } });
+  document.addEventListener("click", e => {
+    const b = e.target.closest(".ver-clave"); if (!b) return;
+    const i = document.getElementById(b.dataset.ver); const ver = i.type === "password"; i.type = ver ? "text" : "password";
+    b.textContent = ver ? "Ocultar" : "Ver"; b.setAttribute("aria-label", ver ? "Ocultar contraseña" : "Mostrar contraseña");
   });
-  $$(".ver-clave").forEach(b => b.addEventListener("click", () => { const i = document.getElementById(b.dataset.ver); const ver = i.type === "password"; i.type = ver ? "text" : "password"; b.textContent = ver ? "Ocultar" : "Ver"; b.setAttribute("aria-label", ver ? "Ocultar contraseña" : "Mostrar contraseña"); }));
-  $("#ir-registro").addEventListener("click", () => { $("#form-ingreso").hidden = true; $("#form-registro").hidden = false; $("#rg-nombre").focus(); });
-  $("#volver-ingreso").addEventListener("click", () => { $("#form-registro").hidden = true; $("#form-ingreso").hidden = false; });
+  $("#ir-registro").addEventListener("click", () => { verFormulario(true); $("#rg-nombre").focus(); });
+  $("#volver-ingreso").addEventListener("click", () => verFormulario(false));
+  $$("[data-staff]").forEach(b => b.addEventListener("click", () => modalStaff(b.dataset.staff)));
 
   $("#form-ingreso").addEventListener("submit", async e => {
     e.preventDefault();
@@ -99,10 +92,32 @@
     const correo = $("#in-correo").value, clave = $("#in-clave").value;
     if (!correo || !clave) { err.textContent = "Ingresa tu correo y tu contraseña."; return; }
     const b = $("#in-btn"); b.disabled = true;
-    try { S.yo = await Datos.ingresar(correo, clave, rolAcceso); $("#in-clave").value = ""; await entrar(true); }
+    try { S.yo = await Datos.ingresar(correo, clave, "funcionario"); $("#in-clave").value = ""; await entrar(true); }
     catch (x) { err.textContent = x.message; }
     finally { b.disabled = false; }
   });
+
+  /* ingreso del administrador del sistema y de los profesionales de soporte */
+  function modalStaff(rol) {
+    const adm = rol === "admin";
+    modal(`<h2>${adm ? "Ingreso del administrador del sistema" : "Ingreso de soporte"}</h2>
+      <p class="rol-desc" style="margin:-6px 0 14px">${adm ? "Recibe los tickets, los asigna a los profesionales de soporte, administra usuarios y revisa indicadores."
+        : "Profesionales del Departamento de Informática: revisa y atiende los tickets que el administrador asignó a tu perfil."}</p>
+      <form id="m-form" novalidate>
+        <div class="campo"><label for="ms-correo">Correo institucional</label><input type="email" id="ms-correo" autocomplete="username" placeholder="nombre.apellido@conaf.cl"></div>
+        <div class="campo"><label for="ms-clave">Contraseña</label><div class="clave-wrap"><input type="password" id="ms-clave" autocomplete="current-password"><button type="button" class="ver-clave" data-ver="ms-clave" aria-label="Mostrar contraseña">Ver</button></div></div>
+        <p class="msg-error" id="m-err" role="alert"></p>
+        <div class="pie-acciones"><button type="button" class="btn fantasma" data-cerrar-modal>Cancelar</button><button type="submit" class="btn ${adm ? "azul" : "primario"}" id="ms-btn">Ingresar</button></div>
+        <p class="pie-form">${adm ? "Si olvidaste tu contraseña, contacta a otro administrador del sistema." : "Tu cuenta la crea el administrador del sistema."}</p></form>`,
+      v => $("#m-form", v).addEventListener("submit", async e => {
+        e.preventDefault(); const err = $("#m-err"); err.textContent = "";
+        const correo = $("#ms-correo").value, clave = $("#ms-clave").value;
+        if (!correo || !clave) { err.textContent = "Ingresa tu correo y tu contraseña."; return; }
+        $("#ms-btn").disabled = true;
+        try { S.yo = await Datos.ingresar(correo, clave, rol); $("#capa-modal").innerHTML = ""; await entrar(true); }
+        catch (x) { err.textContent = x.message; $("#ms-btn").disabled = false; }
+      }), adm ? "modo-admin" : "modo-soporte");
+  }
   $("#form-registro").addEventListener("submit", async e => {
     e.preventDefault();
     const err = $("#rg-error"); err.textContent = "";
@@ -113,22 +128,25 @@
   });
 
   function mostrarPortada() {
-    $("#portada").hidden = false; $("#app").hidden = true; $("#menu-usuario").hidden = true; $("#nav-app").hidden = true;
+    $("#portada").hidden = false; $("#app").hidden = true; $("#menu-usuario").hidden = true; $("#nav-app").hidden = true; $("#acceso-staff").hidden = false;
     cerrarPanel(true); $("#capa-modal").innerHTML = "";
-    elegirRol(rolAcceso); document.title = "Mesa de Ayuda TI · CONAF";
+    verFormulario(false); document.title = "Mesa de Ayuda TI · CONAF";
   }
 
   /* ================= APLICACIÓN ================= */
   const NAV = {
     admin: [{ k: "bandeja", l: "Bandeja de tickets" }, { k: "indicadores", l: "Indicadores" }, { k: "usuarios", l: "Usuarios" }, { k: "nuevo", l: "+ Registrar ticket", cls: "nav-nuevo" }],
+    soporte: [{ k: "bandeja", l: "Mis tickets asignados" }],
     funcionario: [{ k: "mis-solicitudes", l: "Mis solicitudes" }, { k: "nueva-solicitud", l: "+ Nueva solicitud", cls: "nav-nuevo" }]
   };
+  const ROL = { admin: "Administrador del sistema", soporte: "Soporte TI", funcionario: "Funcionario/a" };
+  const esStaff = () => S.yo.rol !== "funcionario";
   async function entrar(nuevaSesion) {
-    $("#portada").hidden = true; $("#app").hidden = false; $("#menu-usuario").hidden = false; $("#nav-app").hidden = false;
+    $("#portada").hidden = true; $("#app").hidden = false; $("#menu-usuario").hidden = false; $("#nav-app").hidden = false; $("#acceso-staff").hidden = true;
     $("#usuario-nombre").textContent = S.yo.nombre; $("#usuario-ini").textContent = iniciales(S.yo.nombre);
-    $("#usuario-rol").textContent = S.yo.rol === "admin" ? "Soporte TI · Administración" : S.yo.unidad;
-    $("#usuario-ini").style.background = S.yo.rol === "admin" ? "var(--gob-azul)" : "var(--verde)";
-    if (nuevaSesion) history.replaceState(null, "", location.pathname + "#" + NAV[S.yo.rol][0].k);
+    $("#usuario-rol").textContent = S.yo.rol === "funcionario" ? S.yo.unidad : ROL[S.yo.rol];
+    $("#usuario-ini").style.background = { admin: "var(--gob-azul)", soporte: "var(--verde-2)", funcionario: "var(--verde)" }[S.yo.rol];
+    if (nuevaSesion) { S.cola = "abiertos"; F.tec = ""; history.replaceState(null, "", location.pathname + "#" + NAV[S.yo.rol][0].k); }
     await cargar();
     ruta();
     if (S.yo.debeCambiar) { modalClave(true); }
@@ -150,7 +168,7 @@
   }
   window.addEventListener("hashchange", ruta);
   function pintarNav() {
-    const vencidos = S.yo.rol === "admin" ? S.tickets.filter(t => ABIERTO.has(t.estado) && plazo(t).k === "vencido").length : 0;
+    const vencidos = esStaff() ? S.tickets.filter(t => ABIERTO.has(t.estado) && plazo(t).k === "vencido").length : 0;
     $("#nav-in").innerHTML = NAV[S.yo.rol].map(n => `<a href="#${n.k}" class="${n.cls || ""}"${n.k === S.vista ? ' aria-current="page"' : ""}>${esc(n.l)}${n.k === "bandeja" && vencidos ? `<span class="badge" title="Tickets con plazo vencido">${vencidos}</span>` : ""}</a>`).join("");
   }
   function pintar() {
@@ -175,22 +193,25 @@
   /* ---------------- ADMIN: bandeja ---------------- */
   const COLAS = [
     { k: "abiertos", l: "Abiertos", f: t => ABIERTO.has(t.estado) },
-    { k: "mios", l: "Asignados a mí", f: t => ABIERTO.has(t.estado) && t.tecnico === S.yo.id },
-    { k: "sin", l: "Sin asignar", f: t => ABIERTO.has(t.estado) && !t.tecnico },
+    { k: "sin", l: "Sin asignar", f: t => ABIERTO.has(t.estado) && !t.tecnico, solo: "admin", alerta: true },
     { k: "vencidos", l: "Plazo vencido", f: t => ABIERTO.has(t.estado) && plazo(t).k === "vencido", alerta: true },
     { k: "espera", l: "En espera", f: t => t.estado === "espera" },
     { k: "resueltos", l: "Resueltos sin confirmar", f: t => t.estado === "resuelto" },
     { k: "cerrados", l: "Cerrados", f: t => t.estado === "cerrado" },
     { k: "todos", l: "Todos", f: () => true }];
+  const colas = () => COLAS.filter(c => !c.solo || c.solo === S.yo.rol);
   const F = { prio: "", cat: "", tec: "", q: "", orden: "plazo" };
   function vistaBandeja() {
+    const adm = S.yo.rol === "admin";
+    if (!adm) F.tec = "";
     $("#vista").innerHTML = `
+      ${adm ? "" : `<div class="encabezado"><div><h1>Mis tickets asignados</h1><p class="sub">Tickets que el administrador del sistema asignó a tu perfil. Registra el avance y la solución en cada uno.</p></div></div>`}
       <div class="bandeja">
         <aside class="filtros" aria-label="Filtros">
           <div class="grupo"><h3>Vistas</h3><div class="colas" id="colas"></div></div>
           <div class="campo"><label for="f-prio">Prioridad</label><select id="f-prio"><option value="">Todas</option>${opciones([1, 2, 3, 4].map(p => [p, C.prioridades[p].l]), F.prio)}</select></div>
           <div class="campo"><label for="f-cat">Categoría</label><select id="f-cat"><option value="">Todas</option>${opciones(C.categorias.map(c => [c, c]), F.cat)}</select></div>
-          <div class="campo"><label for="f-tec">Técnico</label><select id="f-tec"><option value="">Todos</option><option value="__sin"${F.tec === "__sin" ? " selected" : ""}>Sin asignar</option>${opciones(S.tecnicos.map(t => [t.id, t.nombre]), F.tec)}</select></div>
+          ${adm ? `<div class="campo"><label for="f-tec">Profesional de soporte</label><select id="f-tec"><option value="">Todos</option><option value="__sin"${F.tec === "__sin" ? " selected" : ""}>Sin asignar</option>${opciones(S.tecnicos.map(t => [t.id, t.nombre]), F.tec)}</select></div>` : ""}
         </aside>
         <div style="min-width:0">
           <div class="barra-lista">
@@ -201,7 +222,7 @@
           <div class="lista" id="lista" role="list"></div>
         </div>
       </div>`;
-    [["#f-prio", "prio"], ["#f-cat", "cat"], ["#f-tec", "tec"], ["#f-orden", "orden"]].forEach(([s, k]) => $(s).addEventListener("change", e => { F[k] = e.target.value; pintarLista(); }));
+    [["#f-prio", "prio"], ["#f-cat", "cat"], ["#f-tec", "tec"], ["#f-orden", "orden"]].filter(([s]) => $(s)).forEach(([s, k]) => $(s).addEventListener("change", e => { F[k] = e.target.value; pintarLista(); }));
     $("#f-q").addEventListener("input", e => { F.q = e.target.value; pintarLista(); });
     $("#colas").addEventListener("click", e => { const b = e.target.closest("[data-cola]"); if (b) { S.cola = b.dataset.cola; pintarLista(); } });
     $("#lista").addEventListener("click", e => { const f = e.target.closest(".fila[data-id]"); if (f) location.hash = f.dataset.id; });
@@ -210,16 +231,16 @@
   }
   function pintarLista() {
     if (!$("#lista")) return;
-    $("#colas").innerHTML = COLAS.map(c => { const n = S.tickets.filter(c.f).length; return `<button type="button" data-cola="${c.k}" aria-pressed="${S.cola === c.k}" class="${c.alerta && n ? "alerta" : ""}"><span>${c.l}</span><span class="n">${n}</span></button>`; }).join("");
-    const cola = COLAS.find(c => c.k === S.cola) || COLAS[0];
+    $("#colas").innerHTML = colas().map(c => { const n = S.tickets.filter(c.f).length; return `<button type="button" data-cola="${c.k}" aria-pressed="${S.cola === c.k}" class="${c.alerta && n ? "alerta" : ""}"><span>${c.l}</span><span class="n">${n}</span></button>`; }).join("");
+    const cola = colas().find(c => c.k === S.cola) || COLAS[0];
     const q = F.q.trim().toLowerCase();
     let arr = S.tickets.filter(cola.f).filter(t => (!F.prio || String(t.prio) === F.prio) && (!F.cat || t.categoria === F.cat) && (!F.tec || (F.tec === "__sin" ? !t.tecnico : t.tecnico === F.tec)));
     if (q) arr = arr.filter(t => [t.num, t.asunto, t.solicitante && t.solicitante.nombre, t.solicitante && t.solicitante.unidad, t.descripcion, t.inventario].join(" ").toLowerCase().includes(q));
     arr.sort(F.orden === "nuevos" ? (a, b) => b.creado.localeCompare(a.creado) : F.orden === "prio" ? (a, b) => a.prio - b.prio || a.vence.localeCompare(b.vence)
       : (a, b) => (ABIERTO.has(a.estado) ? 0 : 1) - (ABIERTO.has(b.estado) ? 0 : 1) || a.vence.localeCompare(b.vence));
     $("#cola-tit").textContent = cola.l; $("#cola-n").textContent = arr.length + (arr.length === 1 ? " ticket" : " tickets");
-    if (!arr.length) { $("#lista").innerHTML = `<div class="vacio"><h3>No hay tickets en esta vista</h3><p>${S.tickets.length ? "Prueba otra vista o quita los filtros." : "Registra el primero con «+ Registrar ticket»."}</p></div>`; return; }
-    $("#lista").innerHTML = `<div class="fila cab" aria-hidden="true"><span>N°</span><span>Asunto / solicitante</span><span>Prioridad</span><span class="c-est">Estado</span><span class="c-tec">Técnico</span><span class="c-plazo">Plazo</span></div>` +
+    if (!arr.length) { $("#lista").innerHTML = `<div class="vacio"><h3>No hay tickets en esta vista</h3><p>${S.tickets.length ? "Prueba otra vista o quita los filtros." : S.yo.rol === "admin" ? "Registra el primero con «+ Registrar ticket»." : "Cuando el administrador del sistema asigne un ticket a tu perfil, aparecerá aquí."}</p></div>`; return; }
+    $("#lista").innerHTML = `<div class="fila cab" aria-hidden="true"><span>N°</span><span>Asunto / solicitante</span><span>Prioridad</span><span class="c-est">Estado</span><span class="c-tec">Asignado a</span><span class="c-plazo">Plazo</span></div>` +
       arr.map(t => { const p = plazo(t); return `<div class="fila" role="listitem" tabindex="0" data-id="${esc(t.id)}" style="--franja:${franja(t.prio)}">
         <span class="num">${esc(t.num)}${t.ejemplo ? '<span class="etq-ej">EJ</span>' : ""}</span>
         <span class="asunto"><b>${esc(t.asunto)}</b><span>${esc(t.solicitante && t.solicitante.unidad)}${t.solicitante && t.solicitante.nombre ? " · " + esc(t.solicitante.nombre) : ""} · ${esc(t.categoria)}</span></span>
@@ -227,6 +248,16 @@
         <span class="c-est">${chipEstado(t.estado)}</span>
         <span class="quien c-tec">${t.tecnico ? esc(nombre(t.tecnico)) : '<span class="sin">Sin asignar</span>'}</span>
         <span class="plazo ${p.k} c-plazo">${esc(p.txt)}</span></div>`; }).join("");
+  }
+
+  /* ---------------- FUNCIONARIO: avance de la solicitud ---------------- */
+  const PASOS = ["Recibida", "Asignada", "En atención", "Resuelta", "Cerrada"];
+  const PASO = { nuevo: 0, asignado: 1, curso: 2, espera: 2, resuelto: 3, cerrado: 4 };
+  function progreso(t, compacto) {
+    const i = PASO[t.estado] ?? 0;
+    const et = k => k === i && t.estado === "espera" ? "En espera" : PASOS[k];
+    return `<ol class="progreso${compacto ? " compacto" : ""}" aria-label="Avance de la solicitud: paso ${i + 1} de ${PASOS.length}, ${et(i)}">${PASOS.map((_, k) =>
+      `<li class="${k < i || t.estado === "cerrado" ? "hecho" : k === i ? "actual" : ""}"${k === i ? ' aria-current="step"' : ""}><span>${et(k)}</span></li>`).join("")}</ol>`;
   }
 
   /* ---------------- FUNCIONARIO: mis solicitudes ---------------- */
@@ -254,6 +285,7 @@
           <div class="t-top"><span class="t-num">${esc(t.num)}</span>${chipEstado(t.estado)}${t.ejemplo ? '<span class="etq-ej">EJ</span>' : ""}</div>
           <span class="plazo" style="justify-self:end;color:var(--tenue)">Actualizado ${esc(fechaHora(t.actualizado))}</span>
           <h3>${esc(t.asunto)}</h3>
+          ${progreso(t, true)}
           <div class="t-meta"><span>${esc(t.categoria)}</span><span>Creada ${esc(fecha(t.creado))}</span>${t.tecnico ? `<span>Atiende: ${esc(nombre(t.tecnico))}</span>` : ""}
             ${t.estado === "resuelto" ? '<span class="t-accion">Revisa la solución y confírmala</span>' : ult && ult.tipo === "respuesta" ? '<span style="color:var(--gob-azul);font-weight:700">Soporte te respondió</span>' : ""}</div>
         </article>`; }).join("") : `<div class="vacio lista"><h3>${S.tickets.length ? "No tienes solicitudes vigentes" : "Aún no tienes solicitudes"}</h3><p>Cuando necesites ayuda del Departamento de Informática, crea una con «Nueva solicitud».</p></div>`}</div>`;
@@ -345,7 +377,8 @@
   const etiquetaTipo = { nota: "Nota interna", respuesta: "Respuesta de soporte", solucion: "Solución", comentario: "Comentario del solicitante" };
   function pintarPanel() {
     const t = S.tickets.find(x => x.id === S.abierto); if (!t) return cerrarPanel();
-    const adm = S.yo.rol === "admin", s = t.solicitante || {}, p = plazo(t);
+    // adm: personal de informática (administrador o soporte); esAdmin: solo el administrador del sistema
+    const adm = esStaff(), esAdmin = S.yo.rol === "admin", s = t.solicitante || {}, p = plazo(t);
     const borrador = $("#d-texto") ? $("#d-texto").value : "", tipoB = $("#d-tipo") ? $("#d-tipo").value : (adm ? "nota" : "");
     $("#capa-panel").innerHTML = `<div class="velo" data-cerrar></div>
       <aside class="panel" role="dialog" aria-modal="true" aria-labelledby="d-tit">
@@ -357,10 +390,12 @@
         <div class="panel-cuerpo">
           ${adm ? `<div class="ctrl">
             <div class="campo"><label for="d-estado">Estado</label><select id="d-estado">${opciones(C.estados.map(e => [e.k, e.l]), t.estado)}</select></div>
-            <div class="campo"><label for="d-tec">Técnico asignado</label><select id="d-tec"><option value="">Sin asignar</option>${opciones(S.tecnicos.map(x => [x.id, x.id === S.yo.id ? x.nombre + " (yo)" : x.nombre]), t.tecnico || "")}</select></div>
             <div class="campo"><label for="d-cat">Categoría</label><select id="d-cat">${opciones(C.categorias.map(c => [c, c]), t.categoria)}</select></div>
-            <div class="campo"><label for="d-imp">Impacto / urgencia</label><div class="par"><select id="d-imp" aria-label="Impacto">${opciones(C.niveles.map(n => [n.k, "Imp. " + n.l]), t.imp)}</select><select id="d-urg" aria-label="Urgencia">${opciones(C.niveles.map(n => [n.k, "Urg. " + n.l]), t.urg)}</select></div></div>
+            ${esAdmin ? `<div class="campo"><label for="d-tec">Asignar a profesional de soporte</label><select id="d-tec"><option value="">Sin asignar</option>${opciones(S.tecnicos.map(x => [x.id, x.nombre]).concat(t.tecnico && !S.tecnicos.some(x => x.id === t.tecnico) ? [[t.tecnico, nombre(t.tecnico) + " (sin rol de soporte)"]] : []), t.tecnico || "")}</select></div>
+            <div class="campo"><label for="d-imp">Impacto / urgencia</label><div class="par"><select id="d-imp" aria-label="Impacto">${opciones(C.niveles.map(n => [n.k, "Imp. " + n.l]), t.imp)}</select><select id="d-urg" aria-label="Urgencia">${opciones(C.niveles.map(n => [n.k, "Urg. " + n.l]), t.urg)}</select></div></div>`
+              : `<p class="nota-ctrl">La asignación y la prioridad las define el administrador del sistema.</p>`}
           </div>` : ""}
+          ${adm ? "" : progreso(t)}
           ${!adm && t.estado === "resuelto" ? `<div class="confirmar"><p><b>Soporte marcó tu solicitud como resuelta.</b> ¿Quedó solucionado?</p>
             <textarea id="d-rechazo" rows="2" placeholder="Si no quedó resuelto, cuéntanos qué sigue pasando (opcional)"></textarea>
             <div class="pie-acciones" style="justify-content:flex-start"><button type="button" class="btn primario" id="d-conforme">Sí, cerrar la solicitud</button><button type="button" class="btn" id="d-reabrir">No, sigue el problema</button></div></div>` : ""}
@@ -400,11 +435,14 @@
         if (v === "resuelto" && !t.solucion) { e.target.value = t.estado; $("#d-tipo").value = "solucion"; $("#d-texto").focus(); $("#d-msg").textContent = "Para resolver, escribe la solución y agrégala al seguimiento."; return; }
         guardar(() => cambiarEstado(t, v));
       });
-      $("#d-tec").addEventListener("change", e => { const v = e.target.value || null; const c = { tecnico: v }; if (v && t.estado === "nuevo") c.estado = "asignado";
-        guardar(() => Datos.actualizarTicket(t.id, c, { tipo: "sistema", texto: v ? "Asignado a " + nombre(v) : "Asignación retirada" }), v ? "Ticket asignado" : null); });
+      if (esAdmin) {
+        $("#d-tec").addEventListener("change", e => { const v = e.target.value || null; const c = { tecnico: v };
+          if (v && t.estado === "nuevo") c.estado = "asignado"; if (!v && t.estado === "asignado") c.estado = "nuevo";
+          guardar(() => Datos.actualizarTicket(t.id, c, { tipo: "sistema", texto: v ? "Asignado a " + nombre(v) : "Asignación retirada" }), v ? "Ticket asignado a " + nombre(v) : null); });
+        const prio = () => { const imp = +$("#d-imp").value, urg = +$("#d-urg").value; guardar(() => Datos.actualizarTicket(t.id, { imp, urg }, { tipo: "sistema", texto: "Prioridad: " + C.prioridades[Datos.prioridadDe(imp, urg)].l })); };
+        $("#d-imp").addEventListener("change", prio); $("#d-urg").addEventListener("change", prio);
+      }
       $("#d-cat").addEventListener("change", e => guardar(() => Datos.actualizarTicket(t.id, { categoria: e.target.value }, { tipo: "sistema", texto: "Categoría: " + e.target.value })));
-      const prio = () => { const imp = +$("#d-imp").value, urg = +$("#d-urg").value; guardar(() => Datos.actualizarTicket(t.id, { imp, urg }, { tipo: "sistema", texto: "Prioridad: " + C.prioridades[Datos.prioridadDe(imp, urg)].l })); };
-      $("#d-imp").addEventListener("change", prio); $("#d-urg").addEventListener("change", prio);
       $("#d-predef").addEventListener("change", e => { const r = C.respuestas[+e.target.value]; if (r) { const ta = $("#d-texto"); ta.value = ta.value ? ta.value + "\n" + r.x : r.x; ta.focus(); } e.target.value = ""; });
       $$("[data-estado]", $("#capa-panel")).forEach(b => b.addEventListener("click", () => guardar(() => cambiarEstado(t, b.dataset.estado))));
       $("#d-agregar").addEventListener("click", () => {
@@ -412,7 +450,7 @@
         if (!texto) { $("#d-msg").textContent = "Escribe el texto antes de agregarlo."; $("#d-texto").focus(); return; }
         const c = {}, ent = [{ tipo, texto }];
         if (tipo === "solucion") Object.assign(c, { solucion: texto, estado: "resuelto", resuelto: new Date().toISOString() });
-        else if (t.estado === "nuevo" || t.estado === "asignado") { c.estado = "curso"; if (!t.tecnico) c.tecnico = S.yo.id; ent.push({ tipo: "sistema", texto: "Estado: En curso" }); }
+        else if (!esAdmin && t.estado === "asignado") { c.estado = "curso"; ent.push({ tipo: "sistema", texto: "Estado: En curso" }); }
         $("#d-texto").value = "";
         guardar(() => Datos.actualizarTicket(t.id, c, ent), tipo === "solucion" ? t.num + " resuelto" : "Seguimiento agregado");
       });
@@ -509,27 +547,28 @@
   /* ---------------- ADMIN: usuarios ---------------- */
   async function vistaUsuarios() {
     const us = await Datos.listarUsuarios();
-    us.sort((a, b) => (a.rol === b.rol ? 0 : a.rol === "admin" ? -1 : 1) || a.nombre.localeCompare(b.nombre, "es"));
+    const orden = { admin: 0, soporte: 1, funcionario: 2 }, activos = r => us.filter(u => u.rol === r && u.activo).length;
+    us.sort((a, b) => orden[a.rol] - orden[b.rol] || a.nombre.localeCompare(b.nombre, "es"));
     const carga = {}; S.tickets.forEach(t => { if (t.tecnico && ABIERTO.has(t.estado)) carga[t.tecnico] = (carga[t.tecnico] || 0) + 1; });
     $("#vista").innerHTML = `
-      <div class="encabezado"><div><h1>Usuarios</h1><p class="sub">${us.filter(u => u.rol === "admin" && u.activo).length} de soporte y ${us.filter(u => u.rol === "funcionario" && u.activo).length} funcionarios activos. Los funcionarios también pueden crear su cuenta desde la portada.</p></div>
+      <div class="encabezado"><div><h1>Usuarios</h1><p class="sub">${activos("admin")} ${activos("admin") === 1 ? "administrador" : "administradores"}, ${activos("soporte")} de soporte y ${activos("funcionario")} funcionarios activos. Los funcionarios también pueden crear su cuenta desde la portada.</p></div>
         <div class="acciones"><button type="button" class="btn primario" id="u-nuevo">+ Nuevo usuario</button></div></div>
       <div class="tabla-wrap"><table class="tabla">
         <thead><tr><th>Nombre</th><th>Correo</th><th>Unidad</th><th>Rol</th><th>Estado</th><th>Abiertos asignados</th><th></th></tr></thead>
         <tbody>${us.map(u => `<tr class="${u.activo ? "" : "inactivo"}">
           <td>${esc(u.nombre)}${u.id === S.yo.id ? " <span class='sin'>(tú)</span>" : ""}${u.demo ? '<span class="etq-ej">DEMO</span>' : ""}</td>
           <td>${esc(u.correo)}</td><td>${esc(u.unidad)}</td>
-          <td><span class="chip ${u.rol === "admin" ? "rol-adm" : "c-marca"}">${u.rol === "admin" ? "Soporte TI" : "Funcionario/a"}</span></td>
+          <td><span class="chip ${{ admin: "rol-adm", soporte: "c-marca", funcionario: "c-neu" }[u.rol]}">${ROL[u.rol]}</span></td>
           <td>${u.activo ? "Activo" : "Desactivado"}</td>
-          <td class="mono">${u.rol === "admin" ? (carga[u.id] || 0) : "—"}</td>
+          <td class="mono">${u.rol === "soporte" ? (carga[u.id] || 0) : "—"}</td>
           <td><button type="button" class="btn" data-editar="${esc(u.id)}">Editar</button></td></tr>`).join("")}</tbody></table></div>`;
     $("#u-nuevo").addEventListener("click", () => modalUsuario(null));
     $$("[data-editar]").forEach(b => b.addEventListener("click", () => modalUsuario(us.find(u => u.id === b.dataset.editar))));
   }
 
   /* ---------------- modales ---------------- */
-  function modal(html, alAbrir) {
-    $("#capa-modal").innerHTML = `<div class="modal-velo"><div class="modal" role="dialog" aria-modal="true">${html}</div></div>`;
+  function modal(html, alAbrir, cls) {
+    $("#capa-modal").innerHTML = `<div class="modal-velo"><div class="modal${cls ? " " + cls : ""}" role="dialog" aria-modal="true">${html}</div></div>`;
     const v = $(".modal-velo"); v.addEventListener("click", e => { if (e.target === v) $("#capa-modal").innerHTML = ""; });
     $$("[data-cerrar-modal]", v).forEach(b => b.addEventListener("click", () => $("#capa-modal").innerHTML = ""));
     alAbrir && alAbrir(v); const f = v.querySelector("input,select,textarea,button"); f && f.focus();
@@ -560,7 +599,7 @@
         <div class="campo"><label for="mu-correo">Correo institucional</label><input type="email" id="mu-correo" value="${esc(u.correo)}" placeholder="nombre.apellido@conaf.cl"></div>
         <div class="dos"><div class="campo"><label for="mu-unidad">Unidad</label><input type="text" id="mu-unidad" list="lista-unidades" value="${esc(u.unidad)}"></div>
           <div class="campo"><label for="mu-anexo">Anexo</label><input type="text" id="mu-anexo" value="${esc(u.anexo || "")}"></div></div>
-        <div class="campo"><label for="mu-rol">Rol</label><select id="mu-rol">${opciones([["funcionario", "Funcionario/a: crea y sigue sus solicitudes"], ["admin", "Soporte TI: atiende tickets y administra la mesa"]], u.rol)}</select></div>
+        <div class="campo"><label for="mu-rol">Rol</label><select id="mu-rol">${opciones([["funcionario", "Funcionario/a: crea y sigue sus solicitudes"], ["soporte", "Soporte TI: atiende los tickets asignados a su perfil"], ["admin", "Administrador del sistema: asigna tickets y gestiona usuarios"]], u.rol)}</select></div>
         <div class="campo"><label for="mu-clave">${nuevo ? "Contraseña temporal" : "Nueva contraseña temporal (dejar vacío para no cambiar)"}</label><input type="text" id="mu-clave" autocomplete="off"><span class="ayuda">La persona deberá cambiarla al ingresar.</span></div>
         ${nuevo ? "" : `<label class="check"><input type="checkbox" id="mu-activo"${u.activo ? " checked" : ""}> Cuenta activa</label>`}
         <p class="msg-error" id="m-err"></p>

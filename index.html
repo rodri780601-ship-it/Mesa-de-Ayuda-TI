@@ -60,6 +60,16 @@
             <button type="button" data-accion="salir">Cerrar sesión</button>
           </div>
         </div>
+        <div class="acceso-staff" id="acceso-staff" role="group" aria-label="Ingreso del personal de informática" hidden>
+          <button type="button" class="btn-staff adm" data-staff="admin">
+            <svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2l8 3v6c0 5-3.4 9.4-8 11-4.6-1.6-8-6-8-11V5z" fill="none" stroke="currentColor" stroke-width="2"/><path d="M8.5 12l2.5 2.5 4.5-5" fill="none" stroke="currentColor" stroke-width="2"/></svg>
+            <span>Administrador</span>
+          </button>
+          <button type="button" class="btn-staff sop" data-staff="soporte">
+            <svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 14v-2a8 8 0 0 1 16 0v2" fill="none" stroke="currentColor" stroke-width="2"/><rect x="3" y="13" width="4" height="6" rx="1" fill="none" stroke="currentColor" stroke-width="2"/><rect x="17" y="13" width="4" height="6" rx="1" fill="none" stroke="currentColor" stroke-width="2"/><path d="M19 19c0 1.5-1.5 2.5-4 2.5h-2" fill="none" stroke="currentColor" stroke-width="2"/></svg>
+            <span>Soporte</span>
+          </button>
+        </div>
       </div>
     </div>
     <nav class="nav-app" id="nav-app" aria-label="Secciones" hidden><div class="nav-in" id="nav-in"></div></nav>
@@ -83,21 +93,9 @@
 
         <div class="acceso">
           <div class="acceso-card">
-            <h2 class="acceso-tit">Ingreso</h2>
-            <div class="roles" role="tablist" aria-label="Tipo de usuario">
-              <button type="button" role="tab" id="tab-fun" aria-controls="panel-acceso" aria-selected="true" data-rol="funcionario">
-                <svg width="20" height="20" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="4" fill="none" stroke="currentColor" stroke-width="2"/><path d="M4 21c0-4 3.6-7 8-7s8 3 8 7" fill="none" stroke="currentColor" stroke-width="2"/></svg>
-                <span><b>Funcionarios</b><small>Crear y seguir mis solicitudes</small></span>
-              </button>
-              <button type="button" role="tab" id="tab-adm" aria-controls="panel-acceso" aria-selected="false" data-rol="admin">
-                <svg width="20" height="20" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2l8 3v6c0 5-3.4 9.4-8 11-4.6-1.6-8-6-8-11V5z" fill="none" stroke="currentColor" stroke-width="2"/><path d="M8.5 12l2.5 2.5 4.5-5" fill="none" stroke="currentColor" stroke-width="2"/></svg>
-                <span><b>Soporte TI</b><small>Administración de la mesa</small></span>
-              </button>
-            </div>
-
-            <div id="panel-acceso" role="tabpanel" aria-labelledby="tab-fun">
-              <form id="form-ingreso" class="form-acceso" novalidate>
-                <p class="rol-desc" id="rol-desc">Ingresa con tu correo institucional para registrar y revisar tus solicitudes.</p>
+            <h2 class="acceso-tit" id="acceso-tit">Para solicitar un ticket de atención, ingrese los siguientes datos</h2>
+            <div>
+              <form id="form-ingreso" class="form-acceso" novalidate aria-labelledby="acceso-tit">
                 <div class="campo">
                   <label for="in-correo">Correo institucional</label>
                   <input type="email" id="in-correo" autocomplete="username" placeholder="nombre.apellido@conaf.cl" required>
@@ -111,8 +109,7 @@
                 </div>
                 <p class="msg-error" id="in-error" role="alert"></p>
                 <button type="submit" class="btn primario ancho" id="in-btn">Ingresar</button>
-                <p class="pie-form" id="pie-fun">¿Primera vez? <button type="button" class="enlace" id="ir-registro">Crea tu cuenta con tu correo institucional</button></p>
-                <p class="pie-form" id="pie-adm" hidden>Las cuentas del equipo de soporte las crea un administrador de la mesa.</p>
+                <p class="pie-form">¿Primera vez? <button type="button" class="enlace" id="ir-registro">Crea tu cuenta con tu correo institucional</button></p>
               </form>
 
               <form id="form-registro" class="form-acceso" novalidate hidden>
@@ -134,10 +131,11 @@
             <summary>Cuentas de demostración del prototipo</summary>
             <table>
               <tr><th>Funcionario/a</th><td><code>funcionario.demo@conaf.cl</code></td><td><code>Conaf2026!</code></td></tr>
-              <tr><th>Soporte TI</th><td><code>soporte.demo@conaf.cl</code></td><td><code>Soporte2026!</code></td></tr>
-              <tr><th>Soporte TI</th><td><code>tecnico.demo@conaf.cl</code></td><td><code>Soporte2026!</code></td></tr>
+              <tr><th>Administrador</th><td><code>admin.demo@conaf.cl</code></td><td><code>Admin2026!</code></td></tr>
+              <tr><th>Soporte</th><td><code>soporte.demo@conaf.cl</code></td><td><code>Soporte2026!</code></td></tr>
+              <tr><th>Soporte</th><td><code>tecnico.demo@conaf.cl</code></td><td><code>Soporte2026!</code></td></tr>
             </table>
-            <p>Elimínalas en <b>Usuarios</b> (desactivándolas) antes de usar el sistema en producción.</p>
+            <p>El administrador y soporte ingresan con los botones de la esquina superior derecha. Desactiva estas cuentas en <b>Usuarios</b> antes de usar el sistema en producción.</p>
           </details>
         </div>
       </div>

@@ -63,7 +63,8 @@
   const prioridadDe = (imp, urg) => CATALOGOS.matriz[imp + "-" + urg] || 3;
 
   /* ---------------- Almacenamiento local ---------------- */
-  const K = { usuarios: "mati.usuarios", tickets: "mati.tickets", seq: "mati.secuencia", sesion: "mati.sesion", init: "mati.inicializado" };
+  const K = { usuarios: "mati.usuarios", tickets: "mati.tickets", seq: "mati.secuencia", sesion: "mati.sesion", init: "mati.inicializado", version: "mati.version" };
+  const VERSION = 2;   // 2: roles separados de administrador del sistema y soporte
   const leer = (k, def) => { try { const v = localStorage.getItem(k); return v ? JSON.parse(v) : def; } catch (e) { return def; } };
   const escribir = (k, v) => { localStorage.setItem(k, JSON.stringify(v)); };
   const ahora = () => new Date().toISOString();
@@ -88,17 +89,31 @@
   function publicoUsuario(u) { if (!u) return null; const { hash, sal, ...r } = u; return clon(r); }
 
   /* ---------------- Datos iniciales de demostración ---------------- */
+  const usuarioDemo = async (o, pw) => { const sal = Math.random().toString(36).slice(2); return Object.assign({ id: uid("u"), activo: true, creado: ahora(), demo: true, sal, hash: await hash(pw, sal) }, o); };
+  const DEMO_ADMIN = { nombre: "Administrador del sistema (demostración)", correo: "admin.demo@conaf.cl", unidad: "Departamento de Informática", rol: "admin", anexo: "" };
+
+  /* Datos guardados por versiones anteriores: "admin" era todo el equipo de soporte */
+  async function migrar() {
+    if (leer(K.version, 1) >= VERSION) return;
+    const us = leer(K.usuarios, []);
+    us.forEach(u => { if (u.demo && u.rol === "admin") u.rol = "soporte"; });
+    if (!us.some(u => u.rol === "admin" && u.activo)) us.unshift(await usuarioDemo(DEMO_ADMIN, "Admin2026!"));
+    escribir(K.usuarios, us);
+    escribir(K.version, VERSION);
+  }
+
   async function inicializar() {
-    if (leer(K.init, false)) return;
-    const usuarios = [];
-    const crearDemo = async (o, pw) => { const sal = Math.random().toString(36).slice(2); usuarios.push(Object.assign({ id: uid("u"), activo: true, creado: ahora(), demo: true, sal, hash: await hash(pw, sal) }, o)); };
-    await crearDemo({ nombre: "Soporte TI (demostración)", correo: "soporte.demo@conaf.cl", unidad: "Departamento de Informática", rol: "admin", anexo: "" }, "Soporte2026!");
-    await crearDemo({ nombre: "Técnico de turno (demostración)", correo: "tecnico.demo@conaf.cl", unidad: "Departamento de Informática", rol: "admin", anexo: "" }, "Soporte2026!");
-    await crearDemo({ nombre: "Funcionario/a (demostración)", correo: "funcionario.demo@conaf.cl", unidad: "Gerencia de Desarrollo y Fomento Forestal", rol: "funcionario", anexo: "" }, "Conaf2026!");
+    if (leer(K.init, false)) return migrar();
+    const usuarios = [
+      await usuarioDemo(DEMO_ADMIN, "Admin2026!"),
+      await usuarioDemo({ nombre: "Profesional de soporte (demostración)", correo: "soporte.demo@conaf.cl", unidad: "Departamento de Informática", rol: "soporte", anexo: "" }, "Soporte2026!"),
+      await usuarioDemo({ nombre: "Técnico de turno (demostración)", correo: "tecnico.demo@conaf.cl", unidad: "Departamento de Informática", rol: "soporte", anexo: "" }, "Soporte2026!"),
+      await usuarioDemo({ nombre: "Funcionario/a (demostración)", correo: "funcionario.demo@conaf.cl", unidad: "Gerencia de Desarrollo y Fomento Forestal", rol: "funcionario", anexo: "" }, "Conaf2026!")];
     escribir(K.usuarios, usuarios);
+    escribir(K.version, VERSION);
 
     // Tickets de ejemplo, marcados como tales; el administrador puede eliminarlos.
-    const [adm, tec, fun] = usuarios;
+    const [adm, sop, tec, fun] = usuarios;
     const H = 36e5, n0 = Date.now(), y = new Date().getFullYear();
     let seq = 0; const tickets = [];
     const mk = (hAtras, o, extra) => {
@@ -117,15 +132,15 @@
     const resolver = (hDesp, tecId) => (t, H) => { t.tecnico = tecId; t.resuelto = new Date(Date.parse(t.creado) + hDesp * H).toISOString(); t.actualizado = t.resuelto; t.solucion = "Solución registrada (ejemplo)."; t.historial.push({ t: t.resuelto, by: tecId, tipo: "solucion", texto: t.solucion }); };
     const otro = (nombre, unidad) => ({ solicitanteId: null, creadoPor: adm.id, canal: "Teléfono / anexo", solicitante: { nombre, unidad, correo: "", anexo: "", ubic: "" } });
     mk(500, Object.assign(otro("Persona de ejemplo", "Oficina de Partes"), { asunto: "Reemplazo de tóner", categoria: "Impresoras y escáner", estado: "cerrado", imp: 3, urg: 3 }), resolver(10, tec.id));
-    mk(330, Object.assign(otro("Persona de ejemplo", "Secretaría de Comunicaciones"), { asunto: "VPN no conecta desde casa", categoria: "Red e internet", estado: "cerrado", imp: 3, urg: 1 }), resolver(6, adm.id));
+    mk(330, Object.assign(otro("Persona de ejemplo", "Secretaría de Comunicaciones"), { asunto: "VPN no conecta desde casa", categoria: "Red e internet", estado: "cerrado", imp: 3, urg: 1 }), resolver(6, sop.id));
     mk(200, { asunto: "Nuevo funcionario: crear cuenta y preparar equipo", tipo: "Requerimiento", categoria: "Cuentas y accesos", estado: "cerrado", imp: 3, urg: 2 }, resolver(20, tec.id));
-    mk(120, Object.assign(otro("Persona de ejemplo", "Gerencia de Áreas Silvestres Protegidas"), { asunto: "Buzón compartido no sincroniza en Outlook", categoria: "Correo y Office 365", estado: "cerrado", imp: 2, urg: 2 }), resolver(31, adm.id));
+    mk(120, Object.assign(otro("Persona de ejemplo", "Gerencia de Áreas Silvestres Protegidas"), { asunto: "Buzón compartido no sincroniza en Outlook", categoria: "Correo y Office 365", estado: "cerrado", imp: 2, urg: 2 }), resolver(31, sop.id));
     mk(26, Object.assign(otro("Persona de ejemplo", "Gerencia de Desarrollo de las Personas"), { asunto: "Correo sospechoso con adjunto reportado", categoria: "Seguridad informática", estado: "resuelto", imp: 1, urg: 2 }), resolver(5, tec.id));
-    mk(30, Object.assign(otro("Persona de ejemplo", "Fiscalía"), { asunto: "Error al firmar documentos en el sistema de gestión documental", categoria: "Sistemas institucionales", estado: "curso", tecnico: adm.id, imp: 2, urg: 1 }));
+    mk(30, Object.assign(otro("Persona de ejemplo", "Fiscalía"), { asunto: "Error al firmar documentos en el sistema de gestión documental", categoria: "Sistemas institucionales", estado: "curso", tecnico: sop.id, imp: 2, urg: 1 }));
     mk(20, { asunto: "Instalar QGIS en notebook de terreno", tipo: "Requerimiento", categoria: "Software y licencias", estado: "espera", tecnico: tec.id, imp: 3, urg: 3, descripcion: "Necesito QGIS para salida a terreno la próxima semana." },
       (t, H) => t.historial.push({ t: new Date(Date.parse(t.creado) + 2 * H).toISOString(), by: tec.id, tipo: "respuesta", texto: "Estamos esperando la aprobación de la jefatura para instalar software en el equipo." }));
     mk(5, Object.assign(otro("Persona de ejemplo", "Oficina de Partes"), { asunto: "Impresora multifuncional atasca papel en bandeja 2", categoria: "Impresoras y escáner", estado: "asignado", tecnico: tec.id, imp: 2, urg: 2 }));
-    mk(1.2, Object.assign(otro("Persona de ejemplo", "Gerencia de Protección contra Incendios Forestales"), { asunto: "Sin acceso a internet en el piso 3, ala norte", categoria: "Red e internet", estado: "curso", tecnico: adm.id, imp: 1, urg: 1, descripcion: "Ningún equipo del ala norte tiene conexión desde las 8:30." }));
+    mk(1.2, Object.assign(otro("Persona de ejemplo", "Gerencia de Protección contra Incendios Forestales"), { asunto: "Sin acceso a internet en el piso 3, ala norte", categoria: "Red e internet", estado: "curso", tecnico: sop.id, imp: 1, urg: 1, descripcion: "Ningún equipo del ala norte tiene conexión desde las 8:30." }));
     mk(0.5, { asunto: "No puedo ingresar a la intranet", categoria: "Cuentas y accesos", estado: "nuevo", imp: 3, urg: 1 });
     escribir(K.tickets, tickets);
     escribir(K.seq, { anio: y, n: seq });
@@ -147,9 +162,11 @@
       const u = leer(K.usuarios, []).find(x => x.correo === correo);
       if (!u || u.hash !== await hash(clave, u.sal)) throw error("credenciales", "El correo o la contraseña no son correctos.");
       if (!u.activo) throw error("inactivo", "Tu cuenta está desactivada. Contacta al Departamento de Informática.");
-      if (u.rol !== rol) throw error("rol", rol === "admin"
-        ? "Esta cuenta es de funcionario/a. Ingresa por la opción Funcionarios."
-        : "Esta cuenta es del equipo de soporte. Ingresa por la opción Administración.");
+      if (u.rol !== rol) throw error("rol", {
+        funcionario: "Esta cuenta es de funcionario/a. Ingresa desde el formulario de la portada.",
+        soporte: "Esta cuenta es de soporte. Ingresa con el botón «Soporte» de la esquina superior derecha.",
+        admin: "Esta cuenta es del administrador del sistema. Ingresa con el botón «Administrador» de la esquina superior derecha."
+      }[u.rol]);
       escribir(K.sesion, { id: u.id, desde: ahora() });
       return publicoUsuario(u);
     },
@@ -186,7 +203,7 @@
 
     /* Solo administradores */
     async listarUsuarios() { const yo = sesion(); if (!yo || yo.rol !== "admin") throw error("permiso", "Sin permiso."); return leer(K.usuarios, []).map(publicoUsuario); },
-    async listarTecnicos() { return leer(K.usuarios, []).filter(u => u.rol === "admin" && u.activo).map(u => ({ id: u.id, nombre: u.nombre })); },
+    async listarTecnicos() { return leer(K.usuarios, []).filter(u => u.rol === "soporte" && u.activo).map(u => ({ id: u.id, nombre: u.nombre })); },
     async nombres() { const m = {}; leer(K.usuarios, []).forEach(u => m[u.id] = u.nombre); return m; },
     async guardarUsuario(datos) {
       const yo = sesion(); if (!yo || yo.rol !== "admin") throw error("permiso", "Sin permiso.");
@@ -212,12 +229,15 @@
       const yo = sesion(); if (!yo) throw error("sesion", "Tu sesión terminó.");
       const ts = leer(K.tickets, []);
       if (yo.rol === "admin") return clon(ts);
+      // soporte: solo los tickets que el administrador asignó a su perfil
+      if (yo.rol === "soporte") return clon(ts.filter(t => t.tecnico === yo.id));
       // funcionarios: solo lo suyo y sin notas internas
       return clon(ts.filter(t => t.solicitanteId === yo.id)).map(t => { t.historial = (t.historial || []).filter(h => h.tipo !== "nota"); return t; });
     },
 
     async crearTicket(d) {
       const yo = sesion(); if (!yo) throw error("sesion", "Tu sesión terminó.");
+      if (yo.rol === "soporte") throw error("permiso", "Los tickets los registra el solicitante o el administrador del sistema.");
       const ts = leer(K.tickets, []); const y = new Date().getFullYear();
       let s = leer(K.seq, { anio: y, n: 0 }); if (s.anio !== y) s = { anio: y, n: 0 };
       s.n++; escribir(K.seq, s);
@@ -241,10 +261,14 @@
       return clon(t);
     },
 
-    /* Cambios de un administrador: campos + entrada de historial */
+    /* Cambios del administrador o del profesional asignado: campos + entrada de historial */
     async actualizarTicket(id, campos, entrada) {
-      const yo = sesion(); if (!yo || yo.rol !== "admin") throw error("permiso", "Solo el equipo de soporte puede modificar tickets.");
+      const yo = sesion(); if (!yo || yo.rol === "funcionario") throw error("permiso", "Solo el equipo de soporte puede modificar tickets.");
       const ts = leer(K.tickets, []); const t = ts.find(x => x.id === id); if (!t) throw error("no_existe", "El ticket ya no existe.");
+      if (yo.rol === "soporte") {
+        if (t.tecnico !== yo.id) throw error("permiso", "Este ticket ya no está asignado a tu perfil.");
+        if (["tecnico", "imp", "urg"].some(k => k in campos)) throw error("permiso", "Solo el administrador del sistema puede reasignar o cambiar la prioridad.");
+      }
       const tAhora = ahora();
       Object.assign(t, campos, { actualizado: tAhora });
       if ("imp" in campos || "urg" in campos) { t.prio = prioridadDe(t.imp, t.urg); t.vence = new Date(Date.parse(t.creado) + CATALOGOS.prioridades[t.prio].h * 36e5).toISOString(); }
@@ -256,7 +280,7 @@
     /* Acciones del funcionario sobre su propia solicitud */
     async comentar(id, texto) {
       const yo = sesion(); const ts = leer(K.tickets, []); const t = ts.find(x => x.id === id);
-      if (!yo || !t || (yo.rol !== "admin" && t.solicitanteId !== yo.id)) throw error("permiso", "Sin permiso sobre esta solicitud.");
+      if (!yo || !t || !(yo.rol === "admin" || (yo.rol === "soporte" && t.tecnico === yo.id) || t.solicitanteId === yo.id)) throw error("permiso", "Sin permiso sobre esta solicitud.");
       const tA = ahora(); t.historial.push({ t: tA, by: yo.id, tipo: "comentario", texto }); t.actualizado = tA;
       if (t.estado === "espera") { t.estado = "curso"; t.historial.push({ t: tA, by: yo.id, tipo: "sistema", texto: "Estado: En curso (respuesta del solicitante)" }); }
       escribir(K.tickets, ts);

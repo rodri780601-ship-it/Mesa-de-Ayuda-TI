@@ -23,27 +23,36 @@ Cuentas de demostración:
 | Rol | Correo | Contraseña |
 |---|---|---|
 | Funcionario/a | funcionario.demo@conaf.cl | Conaf2026! |
+| Administrador del sistema | admin.demo@conaf.cl | Admin2026! |
 | Soporte TI | soporte.demo@conaf.cl | Soporte2026! |
 | Soporte TI | tecnico.demo@conaf.cl | Soporte2026! |
 
-El sistema se inicia con tickets de ejemplo, marcados como "EJ". Un usuario de soporte puede eliminarlos desde el aviso en la bandeja. Para volver al estado inicial, borre los datos del sitio en el navegador (claves `mati.*` en localStorage).
+En la portada, los funcionarios ingresan en el recuadro "Para solicitar un ticket de atención, ingrese los siguientes datos". El administrador y soporte ingresan con los botones **Administrador** y **Soporte** de la esquina superior derecha.
+
+El sistema se inicia con tickets de ejemplo, marcados como "EJ". El administrador puede eliminarlos desde el aviso en la bandeja. Para volver al estado inicial, borre los datos del sitio en el navegador (claves `mati.*` en localStorage).
+
+Si el navegador tiene datos de una versión anterior (con un solo rol de soporte), al abrir el sistema las cuentas de demostración de soporte pasan al rol Soporte TI y, si no hay ningún administrador activo, se crea `admin.demo@conaf.cl`.
 
 ## Roles
 
 **Funcionarios**
-- Crean su cuenta desde la portada con su correo @conaf.cl, o la crea un administrador.
+- Crean su cuenta desde la portada con su correo @conaf.cl, o la crea el administrador.
 - Registran solicitudes indicando categoría, asunto, descripción, equipo y urgencia.
-- Ven solo sus propias solicitudes, el estado, quién las atiende y el plazo.
+- Hacen seguimiento de sus solicitudes: ven el avance (Recibida, Asignada, En atención, Resuelta, Cerrada), quién las atiende, el plazo y el historial.
 - Ven las respuestas y la solución de soporte, pero no las notas internas.
 - Agregan comentarios y, cuando soporte resuelve, confirman la solución (cierra el ticket) o la rechazan (lo reabre).
 
-**Soporte TI (administración)**
-- Bandeja con vistas: abiertos, asignados a mí, sin asignar, plazo vencido, en espera, resueltos sin confirmar, cerrados.
-- Registran tickets recibidos por teléfono, correo o en forma presencial. Si el correo del solicitante tiene cuenta, el ticket aparece en su portal.
-- Asignan técnico, cambian estado y categoría, y ajustan impacto y urgencia, lo que recalcula la prioridad y el plazo.
-- Registran notas internas, respuestas al solicitante y la solución, con respuestas predefinidas.
-- Indicadores: tickets abiertos, vencidos, cumplimiento de plazo, tiempo medio de resolución, tendencia semanal y distribución por categoría, técnico, unidad y estado. Exportación del registro a CSV (separado por punto y coma, para Excel).
-- Usuarios: crear cuentas, asignar rol, desactivar y definir contraseñas temporales (se obliga a cambiarlas en el primer ingreso).
+**Administrador del sistema**
+- Bandeja con todos los tickets y vistas: abiertos, sin asignar, plazo vencido, en espera, resueltos sin confirmar, cerrados.
+- Asigna cada ticket a un profesional de soporte y ajusta impacto y urgencia, lo que recalcula la prioridad y el plazo.
+- Registra tickets recibidos por teléfono, correo o en forma presencial. Si el correo del solicitante tiene cuenta, el ticket aparece en su portal.
+- Indicadores: tickets abiertos, vencidos, cumplimiento de plazo, tiempo medio de resolución, tendencia semanal y distribución por categoría, profesional, unidad y estado. Exportación del registro a CSV (separado por punto y coma, para Excel).
+- Usuarios: crear cuentas, asignar rol (funcionario, soporte o administrador), desactivar y definir contraseñas temporales (se obliga a cambiarlas en el primer ingreso).
+
+**Soporte TI (profesionales del Departamento de Informática)**
+- Ven solo los tickets que el administrador asignó a su perfil.
+- Cambian el estado y la categoría, y registran notas internas, respuestas al solicitante y la solución, con respuestas predefinidas.
+- No pueden reasignar tickets ni cambiar la prioridad: eso lo define el administrador.
 
 ## Prioridad y plazos (matriz ITIL)
 
@@ -81,10 +90,10 @@ Para usarlo en la institución se necesita un servidor. Todas las funciones del 
 |---|---|
 | `ingresar`, `salir`, `usuarioActual` | `POST /api/sesion`, `DELETE /api/sesion`, `GET /api/sesion` |
 | `registrar`, `cambiarClave` | `POST /api/usuarios/registro`, `PUT /api/usuarios/yo/clave` |
-| `listarUsuarios`, `guardarUsuario` | `GET /api/usuarios`, `POST/PUT /api/usuarios/:id` (solo soporte) |
-| `listarTickets` | `GET /api/tickets` (el servidor filtra por rol y oculta las notas internas a funcionarios) |
+| `listarUsuarios`, `guardarUsuario` | `GET /api/usuarios`, `POST/PUT /api/usuarios/:id` (solo administrador) |
+| `listarTickets` | `GET /api/tickets` (el servidor filtra por rol: soporte recibe solo lo asignado a su perfil; a funcionarios se les ocultan las notas internas) |
 | `crearTicket` | `POST /api/tickets` (el número correlativo lo asigna el servidor) |
-| `actualizarTicket` | `PATCH /api/tickets/:id` (solo soporte) |
+| `actualizarTicket` | `PATCH /api/tickets/:id` (administrador; soporte solo en sus tickets y sin reasignar ni cambiar prioridad) |
 | `comentar`, `confirmarSolucion` | `POST /api/tickets/:id/comentarios`, `POST /api/tickets/:id/confirmacion` |
 
 Recomendaciones:

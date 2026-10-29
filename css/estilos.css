@@ -139,16 +139,17 @@ body > .barra-gob { padding-top: env(safe-area-inset-top, 0px); height: calc(6px
 
 .acceso { display: flex; flex-direction: column; gap: 14px; }
 .acceso-card { background: var(--superficie); border: 1px solid var(--linea); border-top: 4px solid var(--verde); border-radius: var(--r); padding: 24px; box-shadow: 0 10px 30px rgba(15, 40, 25, .08); }
-.acceso-tit { margin: 0 0 16px; font-size: 1.35rem; }
-.roles { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 18px; }
-.roles button { display: flex; align-items: flex-start; gap: 10px; text-align: left; border: 1px solid var(--linea); background: var(--bg); border-radius: var(--r); padding: 10px; cursor: pointer; color: var(--tenue); }
-.roles button span { display: flex; flex-direction: column; line-height: 1.2; }
-.roles button b { color: var(--tinta); font-size: .95rem; }
-.roles button small { font-size: .76rem; margin-top: 2px; }
-.roles button svg { flex: none; margin-top: 1px; }
-.roles button[aria-selected="true"] { border-color: var(--verde); background: var(--verde-suave); color: var(--verde); box-shadow: inset 0 0 0 1px var(--verde); }
-.roles button[data-rol="admin"][aria-selected="true"] { border-color: var(--gob-azul); background: var(--info-bg); color: var(--gob-azul); box-shadow: inset 0 0 0 1px var(--gob-azul); }
-.acceso-card.modo-admin { border-top-color: var(--gob-azul); }
+.acceso-tit { margin: 0 0 18px; font-size: 1.25rem; }
+
+/* Ingreso del personal (esquina superior derecha) */
+.acceso-staff { display: flex; gap: 6px; }
+.btn-staff { display: inline-flex; align-items: center; gap: 6px; border: 1px solid currentColor; background: var(--superficie); border-radius: var(--r); padding: 5px 11px; cursor: pointer; font-weight: 700; font-size: .85rem; }
+.btn-staff.adm { color: var(--gob-azul); }
+.btn-staff.sop { color: var(--verde); }
+.btn-staff.adm:hover { background: var(--info-bg); }
+.btn-staff.sop:hover { background: var(--verde-suave); }
+.modal.modo-admin { border-top-color: var(--gob-azul); }
+.modal .pie-form { margin-top: 2px; }
 .form-acceso { display: flex; flex-direction: column; gap: 14px; }
 .rol-desc { margin: 0; color: var(--tenue); font-size: .92rem; }
 .pie-form { margin: 0; font-size: .88rem; color: var(--tenue); text-align: center; }
@@ -318,6 +319,22 @@ legend { font-family: var(--f-texto); font-size: .74rem; letter-spacing: .09em; 
 .redactar .fila-r select { flex: 1 1 180px; width: auto; }
 .confirmar { background: var(--ok-bg); border: 1px solid color-mix(in srgb, var(--ok) 40%, transparent); border-radius: var(--r); padding: 14px; display: flex; flex-direction: column; gap: 10px; }
 .confirmar p { margin: 0; }
+.nota-ctrl { grid-column: 1 / -1; margin: 0; font-size: .84rem; color: var(--tenue); }
+
+/* Avance de la solicitud */
+.progreso { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); counter-reset: paso; }
+.progreso li { position: relative; display: flex; flex-direction: column; align-items: center; gap: 6px; text-align: center; font-size: .78rem; line-height: 1.2; color: var(--tenue); counter-increment: paso; }
+.progreso li::before { content: counter(paso); position: relative; z-index: 1; width: 26px; height: 26px; border-radius: 50%; border: 2px solid var(--linea); background: var(--superficie); display: grid; place-items: center; font-weight: 700; font-size: .76rem; }
+.progreso li + li::after { content: ""; position: absolute; top: 12px; right: 50%; width: 100%; height: 2px; background: var(--linea); }
+.progreso li.hecho::before { content: "✓"; background: var(--verde); border-color: var(--verde); color: var(--marca-tinta); }
+.progreso li.hecho::after, .progreso li.actual::after { background: var(--verde); }
+.progreso li.actual { color: var(--tinta); font-weight: 700; }
+.progreso li.actual::before { border-color: var(--verde); color: var(--verde); box-shadow: 0 0 0 4px var(--verde-suave); }
+.progreso.compacto { grid-column: 1 / -1; margin: 4px 0 2px; }
+.progreso.compacto li { font-size: .72rem; gap: 4px; }
+.progreso.compacto li::before { width: 12px; height: 12px; font-size: 0; border-width: 2px; box-shadow: none; }
+.progreso.compacto li + li::after { top: 5px; }
+.progreso.compacto li:not(.actual) span { color: var(--tenue); font-weight: 400; }
 
 /* Indicadores */
 .kpis { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 12px; margin-bottom: 18px; }
@@ -396,7 +413,9 @@ legend { font-family: var(--f-texto); font-size: .74rem; letter-spacing: .09em; 
   .fila .asunto { grid-column: 1 / -1; }
   .fila .c-plazo { justify-self: end; }
   fieldset, .ctrl, .modal .dos { grid-template-columns: minmax(0, 1fr); }
-  .roles { grid-template-columns: 1fr; }
+  .acceso-staff { width: 100%; }
+  .btn-staff { flex: 1; justify-content: center; }
+  .progreso.compacto li:not(.actual) span { display: none; }
   .resumen-mis { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px; }
   .res .v { font-size: 1.4rem; }
   .barra { grid-template-columns: 100px minmax(0, 1fr) 30px; }
