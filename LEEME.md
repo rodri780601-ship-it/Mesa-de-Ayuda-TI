@@ -27,7 +27,7 @@ Cuentas de demostración:
 | Soporte TI | soporte.demo@conaf.cl | Soporte2026! |
 | Soporte TI | tecnico.demo@conaf.cl | Soporte2026! |
 
-En la portada, los funcionarios ingresan en el recuadro "Para solicitar un ticket de atención, ingrese los siguientes datos". El administrador y soporte ingresan con los botones **Administrador** y **Soporte** de la esquina superior derecha.
+En la portada, los funcionarios ingresan en el recuadro "Para solicitar un ticket de atención, ingrese los siguientes datos". El administrador y soporte ingresan con los botones **Administrador TI** y **Usuario TI** de la esquina superior derecha.
 
 El sistema se inicia con tickets de ejemplo, marcados como "EJ". El administrador puede eliminarlos desde el aviso en la bandeja. Para volver al estado inicial, borre los datos del sitio en el navegador (claves `mati.*` en localStorage).
 

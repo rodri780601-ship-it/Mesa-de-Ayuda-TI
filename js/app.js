@@ -100,7 +100,7 @@
   /* ingreso del administrador del sistema y de los profesionales de soporte */
   function modalStaff(rol) {
     const adm = rol === "admin";
-    modal(`<h2>${adm ? "Ingreso del administrador del sistema" : "Ingreso de soporte"}</h2>
+    modal(`<h2>${adm ? "Ingreso Administrador TI" : "Ingreso Usuario TI"}</h2>
       <p class="rol-desc" style="margin:-6px 0 14px">${adm ? "Recibe los tickets, los asigna a los profesionales de soporte, administra usuarios y revisa indicadores."
         : "Profesionales del Departamento de Informática: revisa y atiende los tickets que el administrador asignó a tu perfil."}</p>
       <form id="m-form" novalidate>

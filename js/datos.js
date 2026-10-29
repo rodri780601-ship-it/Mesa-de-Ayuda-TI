@@ -164,8 +164,8 @@
       if (!u.activo) throw error("inactivo", "Tu cuenta está desactivada. Contacta al Departamento de Informática.");
       if (u.rol !== rol) throw error("rol", {
         funcionario: "Esta cuenta es de funcionario/a. Ingresa desde el formulario de la portada.",
-        soporte: "Esta cuenta es de soporte. Ingresa con el botón «Soporte» de la esquina superior derecha.",
-        admin: "Esta cuenta es del administrador del sistema. Ingresa con el botón «Administrador» de la esquina superior derecha."
+        soporte: "Esta cuenta es de soporte. Ingresa con el botón «Usuario TI» de la esquina superior derecha.",
+        admin: "Esta cuenta es del administrador del sistema. Ingresa con el botón «Administrador TI» de la esquina superior derecha."
       }[u.rol]);
       escribir(K.sesion, { id: u.id, desde: ahora() });
       return publicoUsuario(u);
