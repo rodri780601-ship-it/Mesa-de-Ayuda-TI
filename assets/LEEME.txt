@@ -1,0 +1,14 @@
+LOGOS OFICIALES
+===============
+
+Copie en esta carpeta los archivos oficiales con estos nombres exactos:
+
+  logo-gobierno.png   Logo del Gobierno de Chile (versión horizontal, fondo transparente)
+  logo-conaf.png      Logo de CONAF (fondo transparente)
+
+Se muestran a 48 px de alto en la cabecera. Use imágenes de al menos 144 px de alto para que se vean nítidas en pantallas de alta resolución.
+
+Mientras los archivos no existan, la cabecera muestra los nombres en texto.
+
+Solicite las versiones vigentes a la Secretaría de Comunicaciones de CONAF. Las normas gráficas del Gobierno de Chile definen el uso del logo junto al de cada servicio.
+Para usar SVG, cambie la extensión en index.html (etiquetas <img> dentro de .logo-gob y .logo-conaf).

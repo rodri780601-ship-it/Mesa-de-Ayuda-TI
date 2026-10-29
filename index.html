@@ -1,0 +1,172 @@
+<!doctype html>
+<html lang="es-CL">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Mesa de Ayuda TI · CONAF</title>
+  <meta name="description" content="Sistema de tickets de atención del Departamento de Informática, Oficina Central, Corporación Nacional Forestal.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&family=Roboto+Slab:wght@500;700&family=Roboto+Mono:wght@500&display=swap">
+  <link rel="stylesheet" href="css/estilos.css">
+  <script>
+    // aplica tema y tamaño de texto guardados antes de pintar
+    try {
+      var t = localStorage.getItem("mati.tema"); if (t) document.documentElement.setAttribute("data-theme", t);
+      var f = localStorage.getItem("mati.texto"); if (f) document.documentElement.style.setProperty("--escala", f);
+    } catch (e) {}
+  </script>
+</head>
+<body>
+  <a class="saltar" href="#principal">Saltar al contenido</a>
+
+  <!-- Barra de Gobierno de Chile -->
+  <div class="barra-gob" aria-hidden="true"><span></span><span></span></div>
+
+  <header class="cabecera">
+    <div class="cab-in">
+      <div class="logos">
+        <span class="logo logo-gob">
+          <img src="assets/logo-gobierno.png" alt="Gobierno de Chile" onload="this.parentNode.classList.add('ok')" onerror="this.remove()">
+          <span class="logo-txt">Gobierno<br>de Chile</span>
+        </span>
+        <span class="sep" aria-hidden="true"></span>
+        <span class="logo logo-conaf">
+          <img src="assets/logo-conaf.png" alt="CONAF, Corporación Nacional Forestal" onload="this.parentNode.classList.add('ok')" onerror="this.remove()">
+          <span class="logo-txt"><b>CONAF</b><small>Corporación Nacional Forestal</small></span>
+        </span>
+      </div>
+      <div class="cab-titulo">
+        <span class="sistema">Mesa de Ayuda TI</span>
+        <span class="area">Departamento de Informática · Oficina Central</span>
+      </div>
+      <div class="cab-herr">
+        <span class="fecha" id="fecha-hoy"></span>
+        <div class="tam-texto" role="group" aria-label="Tamaño del texto">
+          <button type="button" data-texto="mas" title="Aumentar texto">A+</button>
+          <button type="button" data-texto="menos" title="Reducir texto">A−</button>
+          <button type="button" data-texto="normal" title="Texto normal">A</button>
+        </div>
+        <button type="button" class="btn-tema" id="btn-tema" aria-label="Alternar tema claro u oscuro" title="Alternar tema">
+          <svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3a9 9 0 1 0 9 9A7 7 0 0 1 12 3z" fill="currentColor"/></svg>
+        </button>
+        <div class="menu-usuario" id="menu-usuario" hidden>
+          <button type="button" class="usuario-btn" id="usuario-btn" aria-haspopup="true" aria-expanded="false">
+            <span class="avatar" id="usuario-ini"></span>
+            <span class="usuario-txt"><b id="usuario-nombre"></b><small id="usuario-rol"></small></span>
+          </button>
+          <div class="usuario-menu" id="usuario-menu" hidden>
+            <button type="button" data-accion="clave">Cambiar contraseña</button>
+            <button type="button" data-accion="salir">Cerrar sesión</button>
+          </div>
+        </div>
+      </div>
+    </div>
+    <nav class="nav-app" id="nav-app" aria-label="Secciones" hidden><div class="nav-in" id="nav-in"></div></nav>
+  </header>
+
+  <main id="principal">
+    <!-- ================= PORTADA DE ACCESO ================= -->
+    <section id="portada" class="portada" hidden>
+      <div class="portada-in">
+        <div class="presenta">
+          <p class="eyebrow">Servicio interno · Oficina Central</p>
+          <h1>Solicitudes de soporte informático</h1>
+          <p class="bajada">Registra un problema o un requerimiento para el Departamento de Informática y sigue su estado hasta que quede resuelto.</p>
+          <ul class="pasos">
+            <li><b>Registra</b><span>Describe el problema, el equipo y qué tan urgente es.</span></li>
+            <li><b>Sigue el avance</b><span>Verás el número de ticket, quién lo atiende y el plazo comprometido.</span></li>
+            <li><b>Confirma la solución</b><span>Cuando soporte lo resuelva, confirmas o lo reabres.</span></li>
+          </ul>
+          <dl class="contacto" id="contacto-soporte"></dl>
+        </div>
+
+        <div class="acceso">
+          <div class="acceso-card">
+            <h2 class="acceso-tit">Ingreso</h2>
+            <div class="roles" role="tablist" aria-label="Tipo de usuario">
+              <button type="button" role="tab" id="tab-fun" aria-controls="panel-acceso" aria-selected="true" data-rol="funcionario">
+                <svg width="20" height="20" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="4" fill="none" stroke="currentColor" stroke-width="2"/><path d="M4 21c0-4 3.6-7 8-7s8 3 8 7" fill="none" stroke="currentColor" stroke-width="2"/></svg>
+                <span><b>Funcionarios</b><small>Crear y seguir mis solicitudes</small></span>
+              </button>
+              <button type="button" role="tab" id="tab-adm" aria-controls="panel-acceso" aria-selected="false" data-rol="admin">
+                <svg width="20" height="20" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2l8 3v6c0 5-3.4 9.4-8 11-4.6-1.6-8-6-8-11V5z" fill="none" stroke="currentColor" stroke-width="2"/><path d="M8.5 12l2.5 2.5 4.5-5" fill="none" stroke="currentColor" stroke-width="2"/></svg>
+                <span><b>Soporte TI</b><small>Administración de la mesa</small></span>
+              </button>
+            </div>
+
+            <div id="panel-acceso" role="tabpanel" aria-labelledby="tab-fun">
+              <form id="form-ingreso" class="form-acceso" novalidate>
+                <p class="rol-desc" id="rol-desc">Ingresa con tu correo institucional para registrar y revisar tus solicitudes.</p>
+                <div class="campo">
+                  <label for="in-correo">Correo institucional</label>
+                  <input type="email" id="in-correo" autocomplete="username" placeholder="nombre.apellido@conaf.cl" required>
+                </div>
+                <div class="campo">
+                  <label for="in-clave">Contraseña</label>
+                  <div class="clave-wrap">
+                    <input type="password" id="in-clave" autocomplete="current-password" required>
+                    <button type="button" class="ver-clave" data-ver="in-clave" aria-label="Mostrar contraseña">Ver</button>
+                  </div>
+                </div>
+                <p class="msg-error" id="in-error" role="alert"></p>
+                <button type="submit" class="btn primario ancho" id="in-btn">Ingresar</button>
+                <p class="pie-form" id="pie-fun">¿Primera vez? <button type="button" class="enlace" id="ir-registro">Crea tu cuenta con tu correo institucional</button></p>
+                <p class="pie-form" id="pie-adm" hidden>Las cuentas del equipo de soporte las crea un administrador de la mesa.</p>
+              </form>
+
+              <form id="form-registro" class="form-acceso" novalidate hidden>
+                <p class="rol-desc">Crea tu cuenta de funcionario/a. Usa tu correo <b>@conaf.cl</b>.</p>
+                <div class="campo"><label for="rg-nombre">Nombre y apellido</label><input type="text" id="rg-nombre" autocomplete="name" required></div>
+                <div class="campo"><label for="rg-correo">Correo institucional</label><input type="email" id="rg-correo" autocomplete="email" placeholder="nombre.apellido@conaf.cl" required></div>
+                <div class="campo"><label for="rg-unidad">Unidad / Gerencia</label><input type="text" id="rg-unidad" list="lista-unidades" autocomplete="off" required></div>
+                <div class="campo"><label for="rg-anexo">Anexo (opcional)</label><input type="text" id="rg-anexo" inputmode="numeric" autocomplete="off"></div>
+                <div class="campo"><label for="rg-clave">Contraseña (mínimo 8 caracteres)</label>
+                  <div class="clave-wrap"><input type="password" id="rg-clave" autocomplete="new-password" required><button type="button" class="ver-clave" data-ver="rg-clave" aria-label="Mostrar contraseña">Ver</button></div></div>
+                <p class="msg-error" id="rg-error" role="alert"></p>
+                <button type="submit" class="btn primario ancho">Crear cuenta e ingresar</button>
+                <p class="pie-form"><button type="button" class="enlace" id="volver-ingreso">Volver al ingreso</button></p>
+              </form>
+            </div>
+          </div>
+
+          <details class="demo">
+            <summary>Cuentas de demostración del prototipo</summary>
+            <table>
+              <tr><th>Funcionario/a</th><td><code>funcionario.demo@conaf.cl</code></td><td><code>Conaf2026!</code></td></tr>
+              <tr><th>Soporte TI</th><td><code>soporte.demo@conaf.cl</code></td><td><code>Soporte2026!</code></td></tr>
+              <tr><th>Soporte TI</th><td><code>tecnico.demo@conaf.cl</code></td><td><code>Soporte2026!</code></td></tr>
+            </table>
+            <p>Elimínalas en <b>Usuarios</b> (desactivándolas) antes de usar el sistema en producción.</p>
+          </details>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================= APLICACIÓN ================= -->
+    <section id="app" class="app" hidden>
+      <div id="avisos"></div>
+      <div id="vista"></div>
+    </section>
+  </main>
+
+  <footer class="pie">
+    <div class="pie-in">
+      <div>
+        <b>Corporación Nacional Forestal</b>
+        <span>Departamento de Informática · Oficina Central</span>
+      </div>
+      <div class="pie-nota">Prototipo: los datos se guardan en este navegador. Ver LEEME.md para la puesta en producción.</div>
+    </div>
+    <div class="barra-gob" aria-hidden="true"><span></span><span></span></div>
+  </footer>
+
+  <datalist id="lista-unidades"></datalist>
+  <div id="capa-panel"></div>
+  <div id="capa-modal"></div>
+  <div id="capa-aviso" aria-live="polite"></div>
+
+  <script src="js/datos.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>
