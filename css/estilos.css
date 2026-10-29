@@ -78,6 +78,12 @@ img { max-width: 100%; }
 .barra-gob span:last-child { flex: 1; background: var(--gob-rojo); }
 body > .barra-gob { padding-top: env(safe-area-inset-top, 0px); height: calc(6px + env(safe-area-inset-top, 0px)); background: var(--gob-azul); }
 
+/* Aviso de maqueta (eliminar al pasar a producción) */
+.aviso-maqueta { background: var(--warn-bg); border-bottom: 1px solid color-mix(in srgb, var(--warn) 35%, transparent); color: var(--tinta); font-size: .88rem; }
+.maqueta-in { max-width: var(--ancho); margin: 0 auto; display: flex; gap: 10px; align-items: flex-start; padding: 8px max(16px, env(safe-area-inset-right, 0px)) 8px max(16px, env(safe-area-inset-left, 0px)); }
+.maqueta-in svg { flex: none; color: var(--warn); margin-top: 1px; }
+.maqueta-in b { color: var(--warn); }
+
 /* ---------------- Cabecera ---------------- */
 .cabecera { background: var(--cab); border-bottom: 1px solid var(--linea); position: sticky; top: 0; z-index: 20; }
 .cab-in { max-width: var(--ancho); margin: 0 auto; display: flex; align-items: center; gap: 20px; flex-wrap: wrap; padding-block: 10px; }

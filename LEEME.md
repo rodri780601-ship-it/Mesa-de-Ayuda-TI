@@ -79,7 +79,7 @@ Los colores institucionales están en el bloque `:root` al inicio de `css/estilo
 
 ## Importante: paso a producción
 
-Esta versión es un **prototipo funcional**. Guarda todo en el `localStorage` del navegador, por lo que:
+Esta versión es un **prototipo funcional**. Muestra en la parte superior un aviso de maqueta para revisión: elimine el bloque `aviso-maqueta` de `index.html` al pasar a producción. Guarda todo en el `localStorage` del navegador, por lo que:
 
 1. **Los datos no se comparten**: cada computador o navegador tiene su propio registro.
 2. **La autenticación no es segura**: las contraseñas se verifican en el navegador. No use contraseñas reales.
