@@ -10,6 +10,7 @@ mesa-ayuda-ti/
 ├── css/estilos.css     Estilos, paleta institucional y tipografía
 ├── js/datos.js         Capa de datos: usuarios, roles, sesión y tickets
 ├── js/app.js           Interfaz: portal de funcionarios y consola de soporte
+├── docs/               Manual de usuario en PDF (enlazado desde la portada)
 └── assets/             Carpeta para los logos oficiales (ver assets/LEEME.txt)
 ```
 
