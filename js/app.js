@@ -216,7 +216,8 @@
   function vistaBandeja() {
     $("#vista").innerHTML = `
       <div class="encabezado"><div><h1>Casilla de solicitudes</h1>
-        <p class="sub">Todas las solicitudes ingresadas, de mayor a menor prioridad según el cargo del solicitante en el organigrama. Elige cuál responder con «Asignarme».</p></div></div>
+        <p class="sub">Todas las solicitudes ingresadas, de mayor a menor prioridad según el cargo del solicitante en el organigrama. Elige cuál responder con «Asignarme».</p></div>
+        <div class="acciones"><button type="button" class="btn" id="gen-ej" title="Crea solicitudes ficticias marcadas EJ, de distintos niveles del organigrama">+ Generar ejemplos</button></div></div>
       <div class="bandeja">
         <aside class="filtros" aria-label="Filtros">
           <div class="grupo"><h3>Vistas</h3><div class="colas" id="colas"></div></div>
@@ -236,6 +237,11 @@
     [["#f-prio", "prio"], ["#f-cat", "cat"], ["#f-tec", "tec"], ["#f-orden", "orden"]].forEach(([s, k]) => $(s).addEventListener("change", e => { F[k] = e.target.value; pintarLista(); }));
     $("#f-q").addEventListener("input", e => { F.q = e.target.value; pintarLista(); });
     $("#colas").addEventListener("click", e => { const b = e.target.closest("[data-cola]"); if (b) { S.cola = b.dataset.cola; pintarLista(); } });
+    $("#gen-ej").addEventListener("click", async e => {
+      e.target.disabled = true;
+      try { const n = await Datos.generarEjemplos(); await cargar(); S.cola = "abiertos"; pintar(); aviso(`Se generaron ${n} solicitudes de ejemplo (marcadas EJ)`); }
+      catch (x) { aviso(x.message); e.target.disabled = false; }
+    });
     $("#lista").addEventListener("click", async e => {
       const b = e.target.closest("[data-asignarme]");
       if (b) {
@@ -437,8 +443,10 @@
           ${edita ? `<div class="ctrl">
             <div class="campo"><label for="d-estado">Estado</label><select id="d-estado">${opciones(C.estados.map(e => [e.k, e.l]), t.estado)}</select></div>
             <div class="campo"><label for="d-cat">Categoría</label><select id="d-cat">${opciones(C.categorias.map(c => [c, c]), t.categoria)}</select></div>
-            <div class="campo"><label for="d-tec">Asignada a</label><div class="par"><select id="d-tec"><option value="">Sin asignar</option>${opciones(S.tecnicos.map(x => [x.id, x.id === S.yo.id ? x.nombre + " (yo)" : x.nombre]).concat(t.tecnico && !S.tecnicos.some(x => x.id === t.tecnico) ? [[t.tecnico, nombre(t.tecnico) + " (cuenta inactiva)"]] : []), t.tecnico || "")}</select>
-              ${t.tecnico !== S.yo.id && ABIERTO.has(t.estado) ? '<button type="button" class="btn primario" id="d-asignarme">Asignarme</button>' : ""}</div></div>
+            <div class="campo asignada"><span class="etq">Asignada a</span><div class="par asignacion">
+              <span class="asig-nombre">${t.tecnico ? esc(nombre(t.tecnico)) + (t.tecnico === S.yo.id ? " (yo)" : "") : '<span class="sin">Sin asignar</span>'}</span>
+              ${t.tecnico !== S.yo.id && ABIERTO.has(t.estado) ? '<button type="button" class="btn primario" id="d-asignarme">Asignarme</button>' : ""}
+              ${ABIERTO.has(t.estado) ? `<button type="button" class="btn azul reasignar" id="d-reasignar"><svg width="16" height="16" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 8h13l-3.5-3.5M20 16H7l3.5 3.5" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>${t.tecnico ? "Reasignar" : "Asignar a…"}</button>` : ""}</div></div>
             <div class="campo"><label for="d-cargo">Cargo del solicitante</label><select id="d-cargo">${t.cargo ? "" : '<option value="">No informado</option>'}${opcionesCargo(t.cargo || "")}</select></div>
             <div class="campo"><label for="d-prio">Prioridad</label><select id="d-prio"><option value="">Según cargo: ${esc(C.prioridades[base].l)}</option>${opciones([1, 2, 3, 4].map(n => [n, C.prioridades[n].l + " (manual)"]), t.prioManual ? t.prio : "")}</select></div>
             ${t.urg ? `<p class="nota-ctrl">Urgencia indicada: ${esc(C.urgenciaAyuda[t.urg])}</p>` : ""}
@@ -496,9 +504,7 @@
         if (v === "resuelto" && !t.solucion) { e.target.value = t.estado; $("#d-tipo").value = "solucion"; $("#d-texto").focus(); $("#d-msg").textContent = "Para resolver, escribe la solución y agrégala al seguimiento."; return; }
         guardar(() => cambiarEstado(t, v));
       });
-      $("#d-tec").addEventListener("change", e => { const v = e.target.value || null; const c = { tecnico: v };
-        if (v && t.estado === "nuevo") c.estado = "asignado"; if (!v && t.estado === "asignado") c.estado = "nuevo";
-        guardar(() => Datos.actualizarTicket(t.id, c, { tipo: "sistema", texto: v ? "Asignada a " + nombre(v) : "Liberada: vuelve a la casilla sin asignar" }), v ? (v === S.yo.id ? "Solicitud asignada a tu perfil" : "Solicitud asignada a " + nombre(v)) : "Solicitud liberada"); });
+      if ($("#d-reasignar")) $("#d-reasignar").addEventListener("click", () => modalReasignar(t));
       if ($("#d-asignarme")) $("#d-asignarme").addEventListener("click", () => guardar(() => asignarme(t), "Solicitud asignada a tu perfil"));
       $("#d-cargo").addEventListener("change", e => { const k = e.target.value; if (!k) return;
         guardar(() => Datos.actualizarTicket(t.id, { cargo: k }, { tipo: "sistema", texto: "Cargo del solicitante: " + nombreCargo(k) + (t.prioManual ? "" : " · Prioridad: " + C.prioridades[Datos.prioridadDe(k)].l) })); });
@@ -642,6 +648,31 @@
   function confirmar(titulo, texto, boton, accion) {
     modal(`<h2>${esc(titulo)}</h2><p>${esc(texto)}</p><div class="pie-acciones"><button type="button" class="btn fantasma" data-cerrar-modal>Cancelar</button><button type="button" class="btn primario" id="m-ok">${esc(boton)}</button></div>`,
       v => $("#m-ok", v).addEventListener("click", async () => { $("#capa-modal").innerHTML = ""; await accion(); }));
+  }
+  // reasignar una solicitud a otro Usuario TI, o devolverla a la casilla sin asignar
+  function modalReasignar(t) {
+    const actual = t.tecnico, otros = S.tecnicos.filter(x => x.id !== actual);
+    const ops = otros.map(x => [x.id, x.id === S.yo.id ? x.nombre + " (yo)" : x.nombre]).concat(actual ? [["__sin", "Sin asignar: devolver a la casilla"]] : []);
+    modal(`<h2>${actual ? "Reasignar" : "Asignar"} ${esc(t.num)}</h2>
+      <p class="rol-desc" style="margin:-6px 0 14px">«${esc(t.asunto)}»${actual ? `. Hoy está asignada a <b>${esc(nombre(actual))}</b>.` : "."}</p>
+      <form id="m-form" novalidate>
+        ${ops.length ? `<div class="campo"><label for="m-tec">Asignar a</label><select id="m-tec">${opciones(ops)}</select></div>
+        <div class="campo"><label for="m-motivo">Motivo (opcional)</label><textarea id="m-motivo" rows="2" placeholder="Ej.: Requiere acceso al servidor de correo / Cambio de turno / Carga de trabajo"></textarea><span class="ayuda">Queda en el seguimiento como nota interna.</span></div>`
+          : `<p>No hay otro Usuario TI activo para asignar esta solicitud.</p>`}
+        <p class="msg-error" id="m-err" role="alert"></p>
+        <div class="pie-acciones"><button type="button" class="btn fantasma" data-cerrar-modal>Cancelar</button>${ops.length ? `<button type="submit" class="btn primario">${actual ? "Reasignar" : "Asignar"}</button>` : ""}</div></form>`,
+      v => $("#m-form", v).addEventListener("submit", async e => {
+        e.preventDefault(); if (!ops.length) return;
+        const sel = $("#m-tec").value, nuevo = sel === "__sin" ? null : sel, motivo = $("#m-motivo").value.trim();
+        const c = { tecnico: nuevo };
+        if (nuevo && t.estado === "nuevo") c.estado = "asignado"; if (!nuevo && t.estado === "asignado") c.estado = "nuevo";
+        const texto = actual ? "Reasignada de " + nombre(actual) + " a " + (nuevo ? nombre(nuevo) : "la casilla (sin asignar)") : "Asignada a " + nombre(nuevo);
+        const ent = [{ tipo: "sistema", texto }]; if (motivo) ent.push({ tipo: "nota", texto: "Motivo de la reasignación: " + motivo });
+        try {
+          await Datos.actualizarTicket(t.id, c, ent); $("#capa-modal").innerHTML = "";
+          await cargar(); pintar(); pintarPanel(); aviso(nuevo ? t.num + " asignada a " + (nuevo === S.yo.id ? "tu perfil" : nombre(nuevo)) : t.num + " devuelta a la casilla");
+        } catch (x) { $("#m-err").textContent = x.message; }
+      }));
   }
   function modalEliminar(t) {
     modal(`<h2>Solicitar eliminación</h2>

@@ -29,7 +29,7 @@ Cuentas de demostración:
 
 En la portada, los funcionarios ingresan en el recuadro "Para solicitar un ticket de atención, ingrese los siguientes datos". Los Usuarios TI ingresan con el botón **Usuario TI** de la esquina superior derecha.
 
-El sistema se inicia con tickets de ejemplo, marcados como "EJ". Un Usuario TI puede eliminarlos desde el aviso en la casilla. Para volver al estado inicial, borre los datos del sitio en el navegador (claves `mati.*` en localStorage).
+El sistema se inicia con tickets de ejemplo, marcados como "EJ". Un Usuario TI puede eliminarlos desde el aviso en la casilla, y generar un nuevo lote con el botón **+ Generar ejemplos** de la Casilla de solicitudes (8 solicitudes ficticias de distintos niveles del organigrama, sin cuenta de solicitante asociada). Para volver al estado inicial, borre los datos del sitio en el navegador (claves `mati.*` en localStorage).
 
 Si el navegador tiene datos de una versión anterior, al abrir el sistema las cuentas de administrador pasan a Usuario TI (la cuenta `admin.demo@conaf.cl` queda desactivada) y las cuentas sin cargo quedan como "Profesional". Los tickets antiguos conservan su prioridad hasta que un Usuario TI indique el cargo del solicitante.
 
@@ -46,7 +46,7 @@ Si el navegador tiene datos de una versión anterior, al abrir el sistema las cu
 **Usuario TI (profesionales del Departamento de Informática)**
 No existe un administrador formal: todos los Usuarios TI tienen los mismos privilegios de administración, incluidos los que se creen después.
 - **Casilla de solicitudes:** todas las solicitudes llegan a una sola casilla, ordenada de mayor a menor prioridad según el organigrama (ver abajo) y separada por nivel. Vistas: abiertas, sin asignar, asignadas a mí, plazo vencido, en espera, resueltas sin confirmar, cerradas y todas. También se puede ordenar por vencimiento o por fecha.
-- Cada Usuario TI elige qué solicitud responder con **Asignarme** (en la fila de la casilla o en el detalle), y queda asignada a su perfil. También puede asignarla a un colega o liberarla para que vuelva a "Sin asignar". Si registra un avance en una solicitud sin asignar, queda asignada a su perfil.
+- Cada Usuario TI elige qué solicitud responder con **Asignarme** (en la fila de la casilla o en el detalle), y queda asignada a su perfil. Con **Reasignar** (en el detalle) la pasa a otro Usuario TI o la devuelve a la casilla sin asignar, con un motivo opcional que queda como nota interna; el seguimiento registra de quién a quién se reasignó. Si registra un avance en una solicitud sin asignar, queda asignada a su perfil.
 - Cambian estado, categoría, cargo del solicitante y prioridad (ajuste manual cuando el caso lo justifica; queda registrado en el seguimiento).
 - Registran notas internas, respuestas al solicitante y la solución, con respuestas predefinidas.
 - Resuelven los pedidos de eliminación (vista **Eliminación solicitada**): **Aceptar y eliminar** o **No aceptar**, con una respuesta opcional al solicitante. Una solicitud eliminada no se borra del registro: sale de la casilla, de los indicadores, de la exportación y del portal del funcionario, y queda consultable en la vista **Eliminadas** con el motivo, la fecha y quién la aceptó.

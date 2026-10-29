@@ -349,6 +349,13 @@ legend { font-family: var(--f-texto); font-size: .74rem; letter-spacing: .09em; 
 .aviso-elim b { color: var(--crit); }
 .aviso-elim .motivo { white-space: pre-wrap; overflow-wrap: anywhere; }
 .eliminar-pie { display: flex; justify-content: flex-end; }
+/* asignación en el detalle */
+.campo .etq { font-size: .86rem; font-weight: 500; color: var(--tenue); }
+.ctrl .campo.asignada { grid-column: 1 / -1; }
+.par.asignacion { align-items: center; flex-wrap: wrap; }
+.btn.reasignar { box-shadow: 0 2px 6px color-mix(in srgb, var(--gob-azul) 35%, transparent); }
+.btn.reasignar:hover { filter: brightness(1.08); }
+.asig-nombre { flex: 1 1 140px; min-width: 0; padding: 7px 9px; border: 1px solid var(--linea); border-radius: var(--r); background: var(--bg); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .chip-elim { margin-left: 4px; font-size: .72rem; }
 .modal.modo-elim { border-top-color: var(--crit); }
 .nota-ctrl { grid-column: 1 / -1; margin: 0; font-size: .84rem; color: var(--tenue); }

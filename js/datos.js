@@ -371,6 +371,43 @@
       t.actualizado = tA; escribir(K.tickets, ts);
     },
 
+    /* Lote de solicitudes ficticias (marcadas como ejemplo) para probar la casilla y su orden por organigrama */
+    async generarEjemplos() {
+      const yo = exigirTI();
+      const ts = leer(K.tickets, []), y = new Date().getFullYear();
+      let s = leer(K.seq, { anio: y, n: 0 }); if (s.anio !== y) s = { anio: y, n: 0 };
+      const tis = leer(K.usuarios, []).filter(u => u.rol === "soporte" && u.activo).map(u => u.id);
+      const n0 = Date.now(), H = 36e5;
+      // [horas atrás, cargo, unidad, asunto, categoría, urgencia, estado, tipo]
+      const lote = [
+        [0.3, "subdirector", "Subdirección Ejecutiva", "No se puede proyectar en la sala del Consejo", "Equipos y periféricos", 1, "nuevo", "Incidente"],
+        [2, "regional", "Dirección Regional", "Sin acceso a la VPN institucional", "Red e internet", 1, "nuevo", "Incidente"],
+        [5, "auditor", "Auditoría Interna", "Acceso a carpeta compartida de auditoría", "Cuentas y accesos", 2, "asignado", "Requerimiento"],
+        [1, "jefe-unidad", "Unidad de Seguridad Informática", "Alerta de antivirus en un equipo de la unidad", "Seguridad informática", 1, "nuevo", "Incidente"],
+        [8, "jefe-depto", "Gerencia de Áreas Protegidas", "Renovar licencia de software SIG", "Software y licencias", 3, "curso", "Requerimiento"],
+        [0.5, "profesional", "Gerencia de Bosques y Cambio Climático", "Outlook no sincroniza el calendario", "Correo y Office 365", 2, "nuevo", "Incidente"],
+        [3, "administrativo", "Gerencia de Finanzas y Administración", "Teléfono IP sin tono", "Telefonía y videoconferencia", 1, "nuevo", "Incidente"],
+        [12, "tecnico", "Oficina Provincial", "La impresora no escanea al correo", "Impresoras y escáner", 3, "nuevo", "Incidente"]
+      ];
+      lote.forEach(([h, cargo, unidad, asunto, categoria, urg, estado, tipo], i) => {
+        s.n++;
+        const creado = new Date(n0 - h * H).toISOString(), prio = prioridadDe(cargo);
+        const tecnico = estado !== "nuevo" && tis.length ? tis[i % tis.length] : null;
+        const t = {
+          id: uid("t"), num: `${CONFIG.prefijoTicket}-${y}-${String(s.n).padStart(4, "0")}`, anio: y, seq: s.n, ejemplo: true,
+          asunto, descripcion: "Solicitud de ejemplo para revisar el funcionamiento de la casilla.", tipo, categoria, canal: "Mesa web", inventario: "",
+          solicitante: { nombre: "Persona de ejemplo", unidad, correo: "", anexo: "", ubic: "" }, solicitanteId: null,
+          cargo, urg, prio, prioManual: false, estado: tecnico ? estado : "nuevo", tecnico,
+          creadoPor: yo.id, creado, actualizado: creado, vence: venceDe(creado, prio), resuelto: null, cerrado: null, solucion: "",
+          historial: [{ t: creado, by: yo.id, tipo: "sistema", texto: `Solicitud de ejemplo · ${CATALOGOS.prioridades[prio].l} según cargo` }]
+        };
+        if (tecnico) t.historial.push({ t: creado, by: tecnico, tipo: "sistema", texto: "Asignada (ejemplo)" });
+        ts.push(t);
+      });
+      escribir(K.seq, s); escribir(K.tickets, ts);
+      return lote.length;
+    },
+
     async eliminarEjemplos() {
       exigirTI();
       escribir(K.tickets, leer(K.tickets, []).filter(t => !t.ejemplo));
