@@ -303,9 +303,13 @@ legend { font-family: var(--f-texto); font-size: .74rem; letter-spacing: .09em; 
 .btn.tomar { padding: 3px 12px; font-size: .82rem; font-weight: 700; color: var(--verde); border-color: var(--verde); }
 .btn.tomar:hover { background: var(--verde-suave); }
 /* separador de nivel en la casilla ordenada por organigrama */
-.grupo-prio { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; padding: 7px 14px; background: var(--hundido); border-top: 1px solid var(--linea); border-left: 3px solid var(--franja); font-size: .86rem; }
-.grupo-prio b { font-weight: 700; }
-.grupo-prio span:last-child { color: var(--tenue); margin-left: auto; }
+/* barra de color por nivel de prioridad: P1 rojo, P2 ámbar, P3 azul, P4 gris */
+.grupo-prio { --gp: var(--neu); display: flex; align-items: center; gap: 10px; flex-wrap: wrap; padding: 8px 14px; background: var(--gp); color: var(--bg); font-size: .9rem; }
+.grupo-prio.gp-1 { --gp: var(--crit); } .grupo-prio.gp-2 { --gp: var(--warn); } .grupo-prio.gp-3 { --gp: var(--info); } .grupo-prio.gp-4 { --gp: var(--neu); }
+.grupo-prio b { font-weight: 700; letter-spacing: .01em; }
+.grupo-prio .gp-p { font-family: var(--f-mono); font-weight: 700; font-size: .82rem; background: var(--bg); color: var(--gp); border-radius: 999px; padding: 1px 9px; }
+.grupo-prio span:last-child { margin-left: auto; opacity: .92; }
+.lista .fila::before { width: 5px; }
 
 /* Panel de detalle */
 .velo { position: fixed; inset: 0; background: rgba(8, 18, 28, .45); z-index: 40; }

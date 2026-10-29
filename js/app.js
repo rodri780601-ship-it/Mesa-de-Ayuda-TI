@@ -31,7 +31,7 @@
     if (resta < 0) return { k: "vencido", txt: "Vencido hace " + dur(resta) };
     return { k: resta < (v - ini) * 0.25 ? "riesgo" : "", txt: "Vence en " + dur(resta) };
   }
-  const franja = p => ({ 1: "var(--crit)", 2: "var(--warn)", 3: "var(--info)", 4: "var(--linea)" }[p] || "var(--linea)");
+  const franja = p => ({ 1: "var(--crit)", 2: "var(--warn)", 3: "var(--info)", 4: "var(--neu)" }[p] || "var(--linea)");
   const chipEstado = e => { const s = EST[e] || EST.nuevo; return `<span class="chip ${s.c}">${s.l}</span>`; };
   const chipPrio = p => { const x = C.prioridades[p] || C.prioridades[3]; return `<span class="prio ${x.c}">${x.l}</span>`; };
   const opciones = (arr, sel) => arr.map(([v, l]) => `<option value="${esc(v)}"${String(v) === String(sel) ? " selected" : ""}>${esc(l)}</option>`).join("");
@@ -277,7 +277,7 @@
     let html = "", nivel = 0;
     arr.forEach(t => {
       if (porPrio && t.prio !== nivel) { nivel = t.prio; const n = arr.filter(x => x.prio === nivel).length;
-        html += `<div class="grupo-prio" role="presentation" style="--franja:${franja(nivel)}">${chipPrio(nivel)}<b>${esc(C.niveles[nivel])}</b><span>${C.prioridades[nivel].h} h de plazo · ${n} ${n === 1 ? "solicitud" : "solicitudes"}</span></div>`; }
+        html += `<div class="grupo-prio gp-${nivel}" role="presentation"><span class="gp-p">P${nivel}</span><b>${esc(C.prioridades[nivel].l.replace(/^P\d\s*/, ""))} · ${esc(C.niveles[nivel])}</b><span>${C.prioridades[nivel].h} h de plazo · ${n} ${n === 1 ? "solicitud" : "solicitudes"}</span></div>`; }
       html += fila(t);
     });
     $("#lista").innerHTML = `<div class="fila cab" aria-hidden="true"><span>N°</span><span>Asunto / cargo y unidad del solicitante</span><span>Prioridad</span><span class="c-est">Estado</span><span class="c-tec">Asignada a</span><span class="c-plazo">Plazo</span></div>` + html;
