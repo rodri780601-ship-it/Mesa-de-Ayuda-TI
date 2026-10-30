@@ -360,7 +360,7 @@
             <div class="campo"><label for="n-prio">Prioridad</label><select id="n-prio"></select><span class="ayuda">Por defecto, según el cargo. Cámbiala solo si el caso lo justifica.</span></div>
             <div class="campo"><label for="n-urg">Urgencia indicada</label><select id="n-urg">${opciones(urgs.map(k => [k, C.urgenciaAyuda[k]]), 2)}</select></div></fieldset>`
             : `<fieldset><legend>¿Qué tan urgente es?</legend><div class="urgencias">${urgs.map(k => `<label><input type="radio" name="n-urg" value="${k}"${k === 2 ? " checked" : ""}> <span>${esc(C.urgenciaAyuda[k])}</span></label>`).join("")}</div>
-            <p class="ayuda" style="grid-column:1/-1;margin:0">La urgencia orienta al equipo TI. La prioridad y el plazo se asignan según tu cargo.</p></fieldset>`}
+            <p class="ayuda" style="grid-column:1/-1;margin:0;font-size:.82rem;color:var(--tenue)">La urgencia orienta al equipo TI para atender tu solicitud.</p></fieldset>`}
           <div class="pie-acciones"><span class="msg" id="n-msg" role="alert"></span>
             <a class="btn fantasma" href="#${esTI ? "bandeja" : "mis-solicitudes"}">Cancelar</a>
             <button type="submit" class="btn primario" id="n-guardar">${esTI ? "Crear ticket" : "Enviar solicitud"}</button></div>
@@ -368,8 +368,7 @@
         <aside class="lateral">${esTI ? `<h3>Prioridad según cargo</h3><p>La prioridad sigue la estructura jerárquica del organigrama institucional.</p>
             <div id="n-niveles">${tablaCargos(0)}</div>
             <p style="margin-top:10px">Plazo de resolución en horas corridas desde el registro.</p>`
-          : `<h3>Tu prioridad</h3><p>Según tu cargo, <b>${esc(nombreCargo(S.yo.cargo))}</b>, tus solicitudes tienen prioridad ${chipPrio(miNivel)} y un plazo de resolución de <b>${C.prioridades[miNivel].h} horas</b>.</p>
-            ${tablaCargos(miNivel)}
+          : `<div class="plazo-max"><h3>Plazo máximo de respuesta</h3><p class="horas">${C.prioridades[miNivel].h} horas${C.prioridades[miNivel].h >= 48 ? ` (${C.prioridades[miNivel].h / 24} días)` : ""}</p><p>El Departamento de Informática responderá tu solicitud dentro de este plazo, contado desde que la envías.</p></div>
             <h3 style="margin-top:16px">Antes de enviar</h3><p>Reinicia el equipo si el problema lo permite: resuelve muchos casos.</p>
             <p>Indica el N° de inventario y una captura del error si puedes describirla.</p>
             <p>Si tu solicitud afecta a toda tu unidad, menciónalo en la descripción.</p>`}</aside>
