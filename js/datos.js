@@ -100,7 +100,7 @@
 
   /* ---------------- Almacenamiento local ---------------- */
   const K = { usuarios: "mati.usuarios", tickets: "mati.tickets", seq: "mati.secuencia", sesion: "mati.sesion", init: "mati.inicializado", version: "mati.version" };
-  const VERSION = 5;   // 3: perfil único Usuario TI y prioridad según cargo · 4: sin cuenta de demostración de jefatura · 5: sin cargo Asesor/a
+  const VERSION = 6;   // 3: perfil único Usuario TI y prioridad según cargo · 5: sin cargo Asesor/a · 6: una cuenta de demostración por prioridad
   const leer = (k, def) => { try { const v = localStorage.getItem(k); return v ? JSON.parse(v) : def; } catch (e) { return def; } };
   const escribir = (k, v) => { localStorage.setItem(k, JSON.stringify(v)); };
   const ahora = () => new Date().toISOString();
@@ -127,15 +127,28 @@
 
   /* ---------------- Datos iniciales de demostración ---------------- */
   const usuarioDemo = async (o, pw) => { const sal = Math.random().toString(36).slice(2); return Object.assign({ id: uid("u"), activo: true, creado: ahora(), demo: true, sal, hash: await hash(pw, sal) }, o); };
+  // Un funcionario de demostración por cada nivel de prioridad (P1 a P4); contraseña Conaf2026!
+  const DEMO_FUNCIONARIOS = [
+    { nombre: "Autoridad superior (demostración)", correo: "autoridad.demo@conaf.cl", unidad: "Dirección Ejecutiva", cargo: "director", rol: "funcionario", anexo: "" },
+    { nombre: "Directivo (demostración)", correo: "directivo.demo@conaf.cl", unidad: "Gerencia de Áreas Protegidas", cargo: "gerente", rol: "funcionario", anexo: "" },
+    { nombre: "Jefatura (demostración)", correo: "jefatura.demo@conaf.cl", unidad: "Gerencia de Finanzas y Administración", cargo: "jefe-depto", rol: "funcionario", anexo: "" },
+    { nombre: "Funcionario/a (demostración)", correo: "funcionario.demo@conaf.cl", unidad: "Gerencia de Bosques y Cambio Climático", cargo: "profesional", rol: "funcionario", anexo: "" }];
 
   /* Datos guardados por versiones anteriores */
   async function migrar() {
-    if (leer(K.version, 1) >= VERSION) return;
-    const us = leer(K.usuarios, []).filter(u => !(u.demo && u.correo === "jefatura.demo@conaf.cl"));
+    const v = leer(K.version, 1);
+    if (v >= VERSION) return;
+    const us = leer(K.usuarios, []);
     us.forEach(u => {
       if (u.rol === "admin") { u.rol = "soporte"; if (u.demo && u.correo === "admin.demo@conaf.cl") u.activo = false; }
       if (!cargoDe(u.cargo)) u.cargo = "profesional";
     });
+    // 6: una cuenta de demostración por nivel de prioridad
+    for (const d of DEMO_FUNCIONARIOS) {
+      const u = us.find(x => x.correo === d.correo);
+      if (!u) us.push(await usuarioDemo(d, "Conaf2026!"));
+      else if (u.demo) Object.assign(u, { nombre: d.nombre, cargo: d.cargo, unidad: d.unidad, activo: true });
+    }
     escribir(K.usuarios, us);
     const s = leer(K.sesion, null); if (s && !us.some(u => u.id === s.id)) localStorage.removeItem(K.sesion);
     escribir(K.version, VERSION);
@@ -147,7 +160,8 @@
     const usuarios = [
       await usuarioDemo({ nombre: "Usuario TI 1 (demostración)", correo: "soporte.demo@conaf.cl", unidad: "Departamento de Informática", cargo: "profesional", rol: "soporte", anexo: "" }, "Soporte2026!"),
       await usuarioDemo({ nombre: "Usuario TI 2 (demostración)", correo: "tecnico.demo@conaf.cl", unidad: "Departamento de Informática", cargo: "tecnico", rol: "soporte", anexo: "" }, "Soporte2026!"),
-      await usuarioDemo({ nombre: "Funcionario/a (demostración)", correo: "funcionario.demo@conaf.cl", unidad: "Gerencia de Bosques y Cambio Climático", cargo: "profesional", rol: "funcionario", anexo: "" }, "Conaf2026!")];
+      await usuarioDemo(DEMO_FUNCIONARIOS[3], "Conaf2026!")];
+    for (const d of DEMO_FUNCIONARIOS.slice(0, 3)) usuarios.push(await usuarioDemo(d, "Conaf2026!"));
     escribir(K.usuarios, usuarios);
     escribir(K.version, VERSION);
 

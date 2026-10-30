@@ -176,7 +176,7 @@ body > .barra-gob { padding-top: env(safe-area-inset-top, 0px); height: calc(6px
 .demo table { border-collapse: collapse; margin: 10px 0 6px; width: 100%; }
 .demo th { text-align: left; font-weight: 500; color: var(--tenue); padding: 3px 8px 3px 0; white-space: nowrap; }
 .demo td { padding: 3px 8px 3px 0; overflow-wrap: anywhere; }
-.demo code { font-family: var(--f-mono); font-size: .8rem; }
+.demo code { font-family: var(--f-mono); font-size: .74rem; white-space: nowrap; }
 .demo p { margin: 4px 0 0; color: var(--tenue); }
 
 /* ---------------- Formularios ---------------- */

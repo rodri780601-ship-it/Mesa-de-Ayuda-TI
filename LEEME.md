@@ -23,7 +23,10 @@ Cuentas de demostración:
 
 | Rol | Correo | Contraseña |
 |---|---|---|
-| Funcionario/a (Profesional, P4) | funcionario.demo@conaf.cl | Conaf2026! |
+| Autoridad (Director/a Ejecutivo/a) | autoridad.demo@conaf.cl | Conaf2026! |
+| Directivo (Gerente/a) | directivo.demo@conaf.cl | Conaf2026! |
+| Jefatura (Jefe/a de Departamento) | jefatura.demo@conaf.cl | Conaf2026! |
+| Funcionario/a (Profesional) | funcionario.demo@conaf.cl | Conaf2026! |
 | Usuario TI 1 | soporte.demo@conaf.cl | Soporte2026! |
 | Usuario TI 2 | tecnico.demo@conaf.cl | Soporte2026! |
 
