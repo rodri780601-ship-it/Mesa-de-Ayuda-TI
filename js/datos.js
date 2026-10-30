@@ -271,8 +271,12 @@
       const yo = sesion(); if (!yo) throw error("sesion", "Tu sesión terminó.");
       const ts = leer(K.tickets, []);
       if (esTI(yo)) return clon(ts);
-      // funcionarios: solo lo suyo, sin eliminadas ni notas internas
-      return clon(ts.filter(t => t.solicitanteId === yo.id && !t.eliminado)).map(t => { t.historial = (t.historial || []).filter(h => h.tipo !== "nota"); return t; });
+      // funcionarios: solo lo suyo, sin eliminadas, notas internas ni menciones a la prioridad (solo ven el plazo estimado)
+      return clon(ts.filter(t => t.solicitanteId === yo.id && !t.eliminado)).map(t => {
+        t.historial = (t.historial || []).filter(h => h.tipo !== "nota" && !(h.tipo === "sistema" && /^Prioridad:/.test(h.texto)))
+          .map(h => h.tipo === "sistema" ? Object.assign(h, { texto: h.texto.replace(/ · (Prioridad: )?P\d .*$/, "") }) : h);
+        return t;
+      });
     },
 
     async crearTicket(d) {

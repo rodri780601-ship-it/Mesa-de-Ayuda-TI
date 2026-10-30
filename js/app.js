@@ -29,7 +29,13 @@
     if (t.estado === "cerrado") return { k: "hecho", txt: "Cerrado" };
     const resta = v - ahora;
     if (resta < 0) return { k: "vencido", txt: "Vencido hace " + dur(resta) };
-    return { k: resta < (v - ini) * 0.25 ? "riesgo" : "", txt: "Vence en " + dur(resta) };
+    return { k: resta < (v - ini) * 0.25 ? "riesgo" : "", txt: "Vence en " + dur(resta), resta };
+  }
+  // para el funcionario el plazo es una estimación de respuesta, no un vencimiento
+  function plazoFun(t) {
+    const p = plazo(t);
+    if (t.resuelto || t.estado === "cerrado" || !t.vence) return { k: "hecho", txt: t.resuelto ? "Respondida" : p.txt };
+    return p.k === "vencido" ? { k: "", txt: "Plazo estimado cumplido; seguimos trabajando" } : { k: "", txt: "Respuesta estimada en " + dur(p.resta) };
   }
   const franja = p => ({ 1: "var(--crit)", 2: "var(--warn)", 3: "var(--info)", 4: "var(--neu)" }[p] || "var(--linea)");
   const chipEstado = e => { const s = EST[e] || EST.nuevo; return `<span class="chip ${s.c}">${s.l}</span>`; };
@@ -301,7 +307,7 @@
     const lista = (S.filtroMis === "abiertas" ? S.tickets.filter(t => t.estado !== "cerrado") : S.tickets).slice().sort((a, b) => b.actualizado.localeCompare(a.actualizado));
     const nombrePila = S.yo.nombre.split(" ")[0];
     $("#vista").innerHTML = `
-      <div class="encabezado"><div><h1>Hola, ${esc(nombrePila)}</h1><p class="sub">Estas son tus solicitudes al Departamento de Informática. Según tu cargo (${esc(nombreCargo(S.yo.cargo))}) se atienden con prioridad ${chipPrio(Datos.prioridadDe(S.yo.cargo))}.</p></div>
+      <div class="encabezado"><div><h1>Hola, ${esc(nombrePila)}</h1><p class="sub">Estas son tus solicitudes al Departamento de Informática. Plazo estimado de respuesta: ${C.prioridades[Datos.prioridadDe(S.yo.cargo)].h} horas.</p></div>
         <div class="acciones"><a class="btn primario" href="#nueva-solicitud">+ Nueva solicitud</a></div></div>
       <div class="resumen-mis">
         <div class="res"><div class="v">${abiertas.length}</div><div class="l">En atención</div></div>
@@ -314,7 +320,7 @@
           <button type="button" data-f="todas" aria-pressed="${S.filtroMis === "todas"}">Todas</button></div></div>
       <div class="mis" id="mis">${lista.length ? lista.map(t => {
         const ult = (t.historial || []).filter(h => h.tipo !== "sistema").slice(-1)[0];
-        return `<article class="tarjeta" tabindex="0" data-id="${esc(t.id)}" style="--franja:${t.estado === "resuelto" ? "var(--ok)" : franja(t.prio)}">
+        return `<article class="tarjeta" tabindex="0" data-id="${esc(t.id)}" style="--franja:${t.estado === "resuelto" ? "var(--ok)" : "var(--verde)"}">
           <div class="t-top"><span class="t-num">${esc(t.num)}</span>${chipEstado(t.estado)}${t.ejemplo ? '<span class="etq-ej">EJ</span>' : ""}</div>
           <span class="plazo" style="justify-self:end;color:var(--tenue)">Actualizado ${esc(fechaHora(t.actualizado))}</span>
           <h3>${esc(t.asunto)}</h3>
@@ -368,7 +374,7 @@
         <aside class="lateral">${esTI ? `<h3>Prioridad según cargo</h3><p>La prioridad sigue la estructura jerárquica del organigrama institucional.</p>
             <div id="n-niveles">${tablaCargos(0)}</div>
             <p style="margin-top:10px">Plazo de resolución en horas corridas desde el registro.</p>`
-          : `<div class="plazo-max"><h3>Plazo máximo de respuesta</h3><p class="horas">${C.prioridades[miNivel].h} horas${C.prioridades[miNivel].h >= 48 ? ` (${C.prioridades[miNivel].h / 24} días)` : ""}</p><p>El Departamento de Informática responderá tu solicitud dentro de este plazo, contado desde que la envías.</p></div>
+          : `<div class="plazo-max"><h3>Plazo estimado de respuesta</h3><p class="horas">${C.prioridades[miNivel].h} horas${C.prioridades[miNivel].h >= 48 ? ` (${C.prioridades[miNivel].h / 24} días)` : ""}</p><p>Es un plazo estimado, contado desde que envías la solicitud. El Departamento de Informática procurará responder dentro de él, pero puede variar según la complejidad del caso y la demanda de atención.</p></div>
             <h3 style="margin-top:16px">Antes de enviar</h3><p>Reinicia el equipo si el problema lo permite: resuelve muchos casos.</p>
             <p>Indica el N° de inventario y una captura del error si puedes describirla.</p>
             <p>Si tu solicitud afecta a toda tu unidad, menciónalo en la descripción.</p>`}</aside>
@@ -422,7 +428,7 @@
   function pintarPanel() {
     const t = buscarTicket(S.abierto); if (!t) return cerrarPanel();
     // adm: Usuario TI (todos tienen privilegios de administración)
-    const adm = esStaff(), s = t.solicitante || {}, p = plazo(t), base = Datos.prioridadDe(t.cargo);
+    const adm = esStaff(), s = t.solicitante || {}, p = adm ? plazo(t) : plazoFun(t), base = Datos.prioridadDe(t.cargo);
     const elim = !!t.eliminado, edita = adm && !elim;   // una solicitud eliminada solo se consulta
     const borrador = $("#d-texto") ? $("#d-texto").value : "", tipoB = $("#d-tipo") ? $("#d-tipo").value : (adm ? "nota" : "");
     $("#capa-panel").innerHTML = `<div class="velo" data-cerrar></div>
@@ -430,7 +436,7 @@
         <div class="panel-cab">
           <div class="panel-top"><span class="num">${esc(t.num)}</span>${t.ejemplo ? '<span class="etq-ej">EJEMPLO</span>' : ""}<button class="btn fantasma cerrar" type="button" data-cerrar>Cerrar ✕</button></div>
           <h2 id="d-tit">${esc(t.asunto)}</h2>
-          <div class="chips">${elim ? '<span class="chip c-neu">Eliminada</span>' : chipEstado(t.estado)}${chipPrio(t.prio)}<span class="chip c-neu">${esc(t.tipo)}</span>${elim ? "" : `<span class="plazo ${p.k}">${esc(p.txt)}</span>`}</div>
+          <div class="chips">${elim ? '<span class="chip c-neu">Eliminada</span>' : chipEstado(t.estado)}${adm ? chipPrio(t.prio) : ""}<span class="chip c-neu">${esc(t.tipo)}</span>${elim ? "" : `<span class="plazo ${p.k}">${esc(p.txt)}</span>`}</div>
         </div>
         <div class="panel-cuerpo">
           ${elim ? `<div class="aviso-elim"><p><b>Solicitud eliminada</b> el ${fechaHora(t.eliminado.t)}${t.eliminado.by ? " por " + esc(nombre(t.eliminado.by)) : ""}, a pedido del solicitante.</p><p class="motivo">Motivo: ${esc(t.eliminado.motivo)}</p></div>` : ""}
@@ -458,11 +464,11 @@
             ${adm ? `<dt>Nombre</dt><dd>${esc(s.nombre || "—")}${t.solicitanteId ? "" : ' <span class="sin">(sin cuenta en el portal)</span>'}</dd><dt>Unidad</dt><dd>${esc(s.unidad || "—")}</dd>${s.correo ? `<dt>Correo</dt><dd>${esc(s.correo)}</dd>` : ""}` : ""}
             ${s.anexo ? `<dt>Anexo</dt><dd class="mono">${esc(s.anexo)}</dd>` : ""}${s.ubic ? `<dt>Ubicación</dt><dd>${esc(s.ubic)}</dd>` : ""}
             <dt>Categoría</dt><dd>${esc(t.categoria)}</dd>${adm ? `<dt>Canal</dt><dd>${esc(t.canal)}</dd>` : ""}
-            <dt>Prioridad</dt><dd>${esc(C.prioridades[t.prio].l)}${t.prioManual ? " (ajustada por el equipo TI)" : t.cargo ? " según cargo: " + esc(nombreCargo(t.cargo)) : ""}</dd>
+            ${adm ? `<dt>Prioridad</dt><dd>${esc(C.prioridades[t.prio].l)}${t.prioManual ? " (ajustada por el equipo TI)" : t.cargo ? " según cargo: " + esc(nombreCargo(t.cargo)) : ""}</dd>` : ""}
             ${t.inventario ? `<dt>Inventario</dt><dd class="mono">${esc(t.inventario)}</dd>` : ""}
             <dt>Registrada</dt><dd>${fechaHora(t.creado)}${adm && t.creadoPor && t.creadoPor !== t.solicitanteId ? " por " + esc(nombre(t.creadoPor)) : ""}</dd>
             <dt>Atiende</dt><dd>${t.tecnico ? esc(nombre(t.tecnico)) : '<span class="sin">Por asignar</span>'}</dd>
-            <dt>Plazo</dt><dd>${fechaHora(t.vence)}</dd>
+            <dt>${adm ? "Plazo" : "Plazo estimado"}</dt><dd>${fechaHora(t.vence)}</dd>
             ${t.resuelto ? `<dt>Resuelta</dt><dd>${fechaHora(t.resuelto)} · ${dur(Date.parse(t.resuelto) - Date.parse(t.creado))}</dd>` : ""}
           </dl></div>
           ${t.descripcion ? `<div class="seccion"><h3>Descripción</h3><div class="texto">${esc(t.descripcion)}</div></div>` : ""}
