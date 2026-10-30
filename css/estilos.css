@@ -178,6 +178,17 @@ body > .barra-gob { padding-top: env(safe-area-inset-top, 0px); height: calc(6px
 .demo td { padding: 3px 8px 3px 0; overflow-wrap: anywhere; }
 .demo code { font-family: var(--f-mono); font-size: .74rem; white-space: nowrap; }
 .demo p { margin: 4px 0 0; color: var(--tenue); }
+.demo tr[data-demo] { cursor: pointer; }
+.demo tr[data-demo] > * { transition: background .12s; }
+.demo tr[data-demo] > :first-child { padding-left: 6px; border-radius: 6px 0 0 6px; }
+.demo tr[data-demo] > :last-child { border-radius: 0 6px 6px 0; }
+.demo tr[data-demo]:hover > *, .demo tr[data-demo]:focus-visible > * { background: var(--verde-suave); }
+.demo tr[data-demo]:hover th, .demo tr[data-demo]:focus-visible th { color: var(--verde); }
+.demo tr[data-demo]:focus-visible { outline: 2px solid var(--verde); outline-offset: 1px; }
+.demo .demo-ir { color: var(--verde); font-weight: 500; white-space: nowrap; text-align: right; opacity: 0; }
+.demo tr[data-demo]:hover .demo-ir, .demo tr[data-demo]:focus-visible .demo-ir { opacity: 1; }
+@media (hover: none) { .demo .demo-ir { opacity: 1; } }
+@media (max-width: 520px) { .demo .demo-ir { display: none; } }
 
 /* ---------------- Formularios ---------------- */
 .campo { display: flex; flex-direction: column; gap: 4px; min-width: 0; }

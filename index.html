@@ -95,7 +95,7 @@
           <dl class="contacto" id="contacto-soporte"></dl>
           <a class="manual" href="docs/Manual-usuario-Mesa-de-Ayuda-TI-CONAF.pdf" download>
             <svg width="22" height="22" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 2h8l5 5v15H6z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><path d="M14 2v5h5M12.5 11v6M9.5 14.5l3 3 3-3" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
-            <span><b>Descargar manual de usuario</b><small>PDF · 7,0 MB · Funcionarios y Usuario TI</small></span>
+            <span><b>Descargar manual de usuario</b><small>PDF · 7,3 MB · Funcionarios y Usuario TI</small></span>
           </a>
         </div>
 
@@ -138,15 +138,17 @@
 
           <details class="demo">
             <summary>Cuentas de demostración del prototipo</summary>
+            <p>Pincha una cuenta para entrar directamente con ese perfil.</p>
             <table>
-              <tr><th title="Director/a Ejecutivo/a">Autoridad</th><td><code>autoridad.demo@conaf.cl</code></td><td><code>Conaf2026!</code></td></tr>
-              <tr><th title="Gerente/a">Directivo</th><td><code>directivo.demo@conaf.cl</code></td><td><code>Conaf2026!</code></td></tr>
-              <tr><th title="Jefe/a de Departamento">Jefatura</th><td><code>jefatura.demo@conaf.cl</code></td><td><code>Conaf2026!</code></td></tr>
-              <tr><th title="Profesional">Funcionario/a</th><td><code>funcionario.demo@conaf.cl</code></td><td><code>Conaf2026!</code></td></tr>
-              <tr><th>Usuario TI 1</th><td><code>soporte.demo@conaf.cl</code></td><td><code>Soporte2026!</code></td></tr>
-              <tr><th>Usuario TI 2</th><td><code>tecnico.demo@conaf.cl</code></td><td><code>Soporte2026!</code></td></tr>
+              <tr data-demo="autoridad.demo@conaf.cl" data-clave="Conaf2026!" data-rol="funcionario" tabindex="0" role="button" title="Entrar como Director/a Ejecutivo/a"><th>Autoridad</th><td><code>autoridad.demo@conaf.cl</code></td><td><code>Conaf2026!</code></td><td class="demo-ir" aria-hidden="true">Entrar →</td></tr>
+              <tr data-demo="directivo.demo@conaf.cl" data-clave="Conaf2026!" data-rol="funcionario" tabindex="0" role="button" title="Entrar como Gerente/a"><th>Directivo</th><td><code>directivo.demo@conaf.cl</code></td><td><code>Conaf2026!</code></td><td class="demo-ir" aria-hidden="true">Entrar →</td></tr>
+              <tr data-demo="jefatura.demo@conaf.cl" data-clave="Conaf2026!" data-rol="funcionario" tabindex="0" role="button" title="Entrar como Jefe/a de Departamento"><th>Jefatura</th><td><code>jefatura.demo@conaf.cl</code></td><td><code>Conaf2026!</code></td><td class="demo-ir" aria-hidden="true">Entrar →</td></tr>
+              <tr data-demo="funcionario.demo@conaf.cl" data-clave="Conaf2026!" data-rol="funcionario" tabindex="0" role="button" title="Entrar como Profesional"><th>Funcionario/a</th><td><code>funcionario.demo@conaf.cl</code></td><td><code>Conaf2026!</code></td><td class="demo-ir" aria-hidden="true">Entrar →</td></tr>
+              <tr data-demo="soporte.demo@conaf.cl" data-clave="Soporte2026!" data-rol="soporte" tabindex="0" role="button" title="Entrar como Usuario TI"><th>Usuario TI 1</th><td><code>soporte.demo@conaf.cl</code></td><td><code>Soporte2026!</code></td><td class="demo-ir" aria-hidden="true">Entrar →</td></tr>
+              <tr data-demo="tecnico.demo@conaf.cl" data-clave="Soporte2026!" data-rol="soporte" tabindex="0" role="button" title="Entrar como Usuario TI"><th>Usuario TI 2</th><td><code>tecnico.demo@conaf.cl</code></td><td><code>Soporte2026!</code></td><td class="demo-ir" aria-hidden="true">Entrar →</td></tr>
             </table>
-            <p>Los Usuarios TI ingresan con el botón «Usuario TI» de la esquina superior derecha. Desactiva estas cuentas en <b>Usuarios</b> antes de usar el sistema en producción.</p>
+            <p class="msg-error" id="demo-error" role="alert"></p>
+            <p>Los Usuarios TI también ingresan con el botón «Usuario TI» de la esquina superior derecha. Desactiva estas cuentas en <b>Usuarios</b> antes de usar el sistema en producción.</p>
           </details>
         </div>
       </div>

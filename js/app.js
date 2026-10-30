@@ -108,6 +108,17 @@
     finally { b.disabled = false; }
   });
 
+  /* cuentas de demostración: un clic ingresa con ese perfil */
+  async function entrarDemo(f) {
+    const err = $("#demo-error"); err.textContent = "";
+    try { S.yo = await Datos.ingresar(f.dataset.demo, f.dataset.clave, f.dataset.rol); await entrar(true); }
+    catch (x) { err.textContent = x.message; }
+  }
+  $$("[data-demo]").forEach(f => {
+    f.addEventListener("click", () => entrarDemo(f));
+    f.addEventListener("keydown", e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); entrarDemo(f); } });
+  });
+
   /* ingreso de los Usuarios TI (Departamento de Informática) */
   function modalStaff(rol) {
     modal(`<h2>Ingreso Usuario TI</h2>
